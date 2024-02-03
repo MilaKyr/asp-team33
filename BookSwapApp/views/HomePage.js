@@ -1,8 +1,7 @@
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import BookShowcase from './BookShowcase';
 import CategoryView from './CategoryView';
 
-const categories = ["Categories", "Another Categories"]
 
 const HomePage = () => {
   return (

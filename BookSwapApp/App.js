@@ -3,8 +3,9 @@ import { StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { NativeBaseProvider, Box } from "native-base";
+import { NativeBaseProvider } from "native-base";
 import { LinearGradient } from 'expo-linear-gradient';
+import SearchPage from './views/SearchPage';
 
 const config = {
   dependencies: {
@@ -41,7 +42,7 @@ export default function App() {
           <Tab.Screen options={{
             title: 'Book Swap'
           }} name="Home" component={HomePage} />
-          <Tab.Screen name="Search" component={HomePage} />
+          <Tab.Screen name="Search" component={SearchPage} />
           <Tab.Screen name="Upload" component={HomePage} />
         </Tab.Navigator>
       </NavigationContainer>

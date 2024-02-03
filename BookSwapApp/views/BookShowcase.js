@@ -51,57 +51,9 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     bookShowcase: {
-        flex: 3,
+        flex: 1.5,
         height: '100%',
         width: '100%',
-    },
-
-    scrollViewItem: {
-        flexDirection: 'row',
-        backgroundColor: '#F5FCFF',
-        margin: 10,
-        marginHorizontal: 10,
-        flex: 1,
-        borderRadius: 5,
-        alignItems: 'center',
-        justifyContent: 'space-around'
-    },
-
-    scrollViewImage: {
-        width: '40%',
-        height: '90%'
-    },
-
-    scrollViewInfoBox: {
-        width: '60%',
-        flexDirection: 'column',
-        padding: 2
-    },
-
-
-    textTitle: {
-        paddingBottom: 10,
-        textAlign: 'left',
-        fontSize: 16,
-    },
-
-    textAuthors: {
-        textAlign: 'left',
-        fontSize: 12,
-        fontStyle: 'italic',
-    },
-
-    textEdition: {
-        color: '#808080',
-        textAlign: 'left',
-        fontSize: 12,
-    },
-
-    textCourses: {
-        color: '#8E7B4F',
-        textAlign: 'left',
-        fontSize: 16,
-        fontStyle: 'italic'
     },
 });
 

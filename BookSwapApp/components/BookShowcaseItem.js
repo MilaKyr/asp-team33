@@ -3,7 +3,7 @@ import { StyleSheet, View, ScrollView } from 'react-native';
 
 const BookShowcaseItem = ({ item }) => {
     return (
-            <Box alignItems="center">
+            <Box alignItems="center" height='100%'>
                 <Box maxW="80" rounded="2xl" overflow="hidden" borderColor="coolGray.200" borderWidth="1" _light={{
                     backgroundColor: "gray.50"
                 }}>

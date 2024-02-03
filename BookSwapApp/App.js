@@ -1,20 +1,23 @@
-import Header from './views/Header';
 import HomePage from './views/HomePage';
-import Footer from './views/Footer';
 import { StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { NativeBaseProvider, Box } from "native-base";
+import { LinearGradient } from 'expo-linear-gradient';
 
-
+const config = {
+  dependencies: {
+    'linear-gradient': LinearGradient
+  }
+};
 
 
 const Tab = createBottomTabNavigator();
 
 export default function App() {
   return (
-    <NativeBaseProvider>
+    <NativeBaseProvider config={config}>
       <NavigationContainer>
         <Tab.Navigator screenOptions={({ route }) => ({
           tabBarIcon: ({ focused, color, size }) => {

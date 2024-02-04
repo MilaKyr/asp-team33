@@ -1,4 +1,4 @@
-import { StyleSheet, View, ScrollView, Image, Text } from 'react-native';
+import { StyleSheet, View, ScrollView } from 'react-native';
 import BookShowcaseItem from '../components/BookShowcaseItem';
 
 // TODO this will be changed with api call

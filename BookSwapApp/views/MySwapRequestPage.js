@@ -1,8 +1,8 @@
-import { Box, Button, FlatList, Flex, HStack, Heading, Image, Pressable, Text, VStack } from 'native-base';
+import { Box, Button, FlatList, HStack, Heading, Image, Text, VStack } from 'native-base';
 import { StyleSheet, View } from 'react-native';
 
 
-const myBooks = Array.from([1, 2], (index) => {
+const mySwapRequests = Array.from([1, 2], (index) => {
     return ({
         id: index,
         title: "The Web Application Hacker's Handbook: Finding and Exploiting Security Flaws",
@@ -20,20 +20,12 @@ const myBooks = Array.from([1, 2], (index) => {
     })
 })
 
-const MyBooksPage = ({ navigation }) => {
+
+const MySwapRequestPage = () => {
     return (
         <View style={styles.container}>
-            <Flex direction='row'>
-                <Button width='50%' size='lg' variant='outline' onPress={() => {
-                    navigation.navigate('SwapRequest')
-                }}>My Swap Request</Button>
-                <Button size='lg' width='50%' variant='outline' onPress={() => console.log("hello world")}>Upload New Book</Button>
-            </Flex>
             <Box>
-                <Heading fontSize="xl" p="4" pb="3">
-                    My Books
-                </Heading>
-                <FlatList data={myBooks} renderItem={({
+                <FlatList data={mySwapRequests} renderItem={({
                     item
                 }) => <Box marginBottom={4} marginRight={1}>
                         <HStack justifyContent="space-between">
@@ -50,12 +42,8 @@ const MyBooksPage = ({ navigation }) => {
                                 <Text fontSize="xs" color="coolGray.800" alignSelf="flex-start">
                                     Courses: {item.courses}
                                 </Text>
-                                <Button onPress={() => {
-                                    navigation.navigate('SwapOffer')
-                                }}>View Offers for this book</Button>
                                 <HStack width='100%'>
-                                    <Button width='50%' variant='outline' onPress={() => console.log("hello world")}>Update</Button>
-                                    <Button colorScheme="secondary" width='50%' variant='outline' onPress={() => console.log("hello world")}>Delete</Button>
+                                    <Button width='100%' colorScheme="secondary" variant='solid' onPress={() => console.log("hello world")}>Rescind Request</Button>
                                 </HStack>
                             </VStack>
                         </HStack>
@@ -84,4 +72,4 @@ const styles = StyleSheet.create({
     }
 });
 
-export default MyBooksPage;
+export default MySwapRequestPage;

@@ -6,6 +6,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { NativeBaseProvider } from "native-base";
 import { LinearGradient } from 'expo-linear-gradient';
 import SearchPage from './views/SearchPage';
+import MyBooksPage from './views/MyBooksPage';
 
 const config = {
   dependencies: {
@@ -31,7 +32,7 @@ export default function App() {
             } else if (route.name === 'Search') {
               iconName = focused ? 'search' : 'search-outline';
             } else if (route.name === 'Upload') {
-              iconName = focused ? 'cloud-upload' : 'cloud-upload-outline';
+              iconName = focused ? 'book' : 'book-outline';
             }
 
             // You can return any component that you like here!
@@ -43,7 +44,10 @@ export default function App() {
             title: 'Book Swap'
           }} name="Home" component={HomePage} />
           <Tab.Screen name="Search" component={SearchPage} />
-          <Tab.Screen name="Upload" component={HomePage} />
+          <Tab.Screen options={{
+            title: 'My Books',
+            headerTitle: 'My Books'
+          }} name="Upload" component={MyBooksPage} />
         </Tab.Navigator>
       </NavigationContainer>
     </NativeBaseProvider>

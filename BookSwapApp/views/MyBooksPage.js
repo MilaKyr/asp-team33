@@ -27,7 +27,9 @@ const MyBooksPage = ({ navigation }) => {
                 <Button width='50%' size='lg' variant='outline' onPress={() => {
                     navigation.navigate('SwapRequest')
                 }}>My Swap Request</Button>
-                <Button size='lg' width='50%' variant='outline' onPress={() => console.log("hello world")}>Upload New Book</Button>
+                <Button size='lg' width='50%' variant='outline' onPress={() => {
+                    navigation.navigate('UploadBook')
+                }}>Upload New Book</Button>
             </Flex>
             <Box>
                 <Heading fontSize="xl" p="4" pb="3">

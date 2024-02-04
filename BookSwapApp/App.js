@@ -12,6 +12,7 @@ import SearchPage from './views/SearchPage';
 import MyBooksPage from './views/MyBooksPage';
 import SwapOfferPage from './views/SwapOfferPage';
 import MySwapRequestPage from './views/MySwapRequestPage';
+import UploadBookPage from './views/UploadBookPage';
 
 const config = {
   dependencies: {
@@ -36,6 +37,9 @@ function MyBooksStack() {
       <Stack.Screen options={{
         headerTitle: 'My Requests'
       }} name="SwapRequest" component={MySwapRequestPage} />
+      <Stack.Screen options={{
+        headerTitle: 'Upload New Book'
+      }} name="UploadBook" component={UploadBookPage} />
     </Stack.Navigator>
   );
 }

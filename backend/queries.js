@@ -61,12 +61,11 @@ const SignIn = (request, response, next) => {
 
 const SignUp = (request, response, next) => {
     var { email, password, name, surname } = request.body;
-    console.log(request.body);
     // var password_hash = crypto.encrypt(password);
     pool.query("INSERT INTO appuser (email, password_hash, name, surname) \
-                VALUES ($1, $2, $3, $4) RETURNING *", [email, password, name, surname], (err, user) => {
+                VALUES ($1, $2, $3, $4) RETURNING id", [email, password, name, surname], (err, user) => {
         if (err) next(err);
-        var user_id = user.rows[0].id
+        var user_id = user.rows[0].id;
         request.session.loggedin = true;
         request.session.username = user_id;
         return response.status(200).json(user_id);
@@ -118,7 +117,6 @@ const Swaps = (request, response, next) => {
                 LEFT JOIN status ON status.id = request.status_id \
                 WHERE receiver_user_id = $1 AND status.name = 'pending'",
         [user_id], (err, results) => {
-            console.log(err);
             if (err) next(err);
             response.status(200).json(results.rows);
         });

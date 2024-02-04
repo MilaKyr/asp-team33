@@ -13,6 +13,10 @@ import MyBooksPage from './views/MyBooksPage';
 import SwapOfferPage from './views/SwapOfferPage';
 import MySwapRequestPage from './views/MySwapRequestPage';
 import UploadBookPage from './views/UploadBookPage';
+import BookDetailPage from './views/BookDetailPage';
+import SignUpPage from './views/SignUpPage';
+import SignInPage from './views/SignInPage';
+import SwapSchedulePage from './views/SwapSchedulePage';
 
 const config = {
   dependencies: {
@@ -44,6 +48,28 @@ function MyBooksStack() {
   );
 }
 
+function SearchStack() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen options={{
+        headerShown: false
+      }} name="SearchPage" component={SearchPage} />
+      <Stack.Screen options={{
+        headerTitle: 'Book Detail'
+      }} name="BookDetail" component={BookDetailPage} />
+      <Stack.Screen options={{
+        headerShown: false
+      }} name="SignUp" component={SignUpPage} />
+      <Stack.Screen options={{
+        headerShown: false
+      }} name="SignIn" component={SignInPage} />
+      <Stack.Screen options={{
+        headerShown: false
+      }} name="ScheduleSwap" component={SwapSchedulePage} />
+    </Stack.Navigator>
+  );
+}
+
 export default function App() {
   return (
     <NativeBaseProvider config={config}>
@@ -70,7 +96,7 @@ export default function App() {
           <Tab.Screen options={{
             title: 'Book Swap'
           }} name="Home" component={HomePage} />
-          <Tab.Screen name="Search" component={SearchPage} />
+          <Tab.Screen name="Search" component={SearchStack} />
           <Tab.Screen options={{
             title: 'My Books',
             headerTitle: 'My Books'

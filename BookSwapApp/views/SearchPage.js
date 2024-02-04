@@ -1,9 +1,9 @@
 import { Input, Icon, Text, Box, Heading, FlatList, HStack, VStack, Spacer, Image } from 'native-base';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
 // TODO this will be changed with api call
-const bookResults = Array.from([1,2,3,4,5], (index) => {
+const bookResults = Array.from([1, 2, 3, 4, 5], (index) => {
     return ({
         id: index,
         title: "The Web Application Hacker's Handbook: Finding and Exploiting Security Flaws",
@@ -21,7 +21,7 @@ const bookResults = Array.from([1,2,3,4,5], (index) => {
     })
 })
 
-const SearchPage = () => {
+const SearchPage = ({ navigation }) => {
     return (
         <View style={styles.container}>
             <View style={styles.subsets}>
@@ -33,24 +33,28 @@ const SearchPage = () => {
                 </Heading>
                 <FlatList data={bookResults} renderItem={({
                     item
-                }) => <Box marginBottom={4}>
-                        <HStack justifyContent="space-between">
-                            <Image rounded='lg' style={styles.imageCover} source={item.image} alt='image' />
-                            <VStack justifyContent='space-between' pl={2} width='80%' minHeight={100}>
-                                <Text color="coolGray.800" bold>
-                                    {item.title}
-                                </Text>
-                                <Text fontSize="xs" _light={{
-                                    color: "violet.500"
-                                }} fontWeight="500">
-                                    by {item.authors.join(", ")}.
-                                </Text>
-                                <Text fontSize="xs" color="coolGray.800" alignSelf="flex-start">
-                                    Courses: {item.courses}
-                                </Text>
-                            </VStack>
-                        </HStack>
-                    </Box>} keyExtractor={item => item.id} />
+                }) => <Pressable onPress={() => {
+                    navigation.navigate('BookDetail')
+                }}>
+                        <Box marginBottom={4}>
+                            <HStack justifyContent="space-between">
+                                <Image rounded='lg' style={styles.imageCover} source={item.image} alt='image' />
+                                <VStack justifyContent='space-between' pl={2} width='80%' minHeight={100}>
+                                    <Text color="coolGray.800" bold>
+                                        {item.title}
+                                    </Text>
+                                    <Text fontSize="xs" _light={{
+                                        color: "violet.500"
+                                    }} fontWeight="500">
+                                        by {item.authors.join(", ")}.
+                                    </Text>
+                                    <Text fontSize="xs" color="coolGray.800" alignSelf="flex-start">
+                                        Courses: {item.courses}
+                                    </Text>
+                                </VStack>
+                            </HStack>
+                        </Box>
+                    </Pressable>} keyExtractor={item => item.id} />
             </Box>
         </View>
     );

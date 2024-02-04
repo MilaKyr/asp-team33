@@ -7,7 +7,7 @@ const pool = new Pool({
     port: 5432,
 });
 
-const bookShowcase = (request, response) => {
+const bookShowcase = (request, response, next) => {
     pool.query("SELECT appuser.id as user_id, appuser.name, appuser.surname,\
                     book.id as book_id, book.title, book.description, book.edition, book.icbn_10, \
                     author.name||' '||author.surname as author, bookimage.image \
@@ -15,10 +15,8 @@ const bookShowcase = (request, response) => {
                     LEFT JOIN book ON userbook.book_id = book.id \
                     LEFT JOIN bookauthor ON book.id = bookauthor.book_id \
                     LEFT JOIN author ON author.id = bookauthor.author_id \
-                    LEFT JOIN bookimage ON bookimage.book_id = book.id AND bookimage.user_id  = appuser.id", (error, results) => {
-        if (error) {
-            throw error;
-        }
+                    LEFT JOIN bookimage ON bookimage.book_id = book.id AND bookimage.user_id  = appuser.id", (err, results) => {
+        if (err) next(err);
         var books = []
         var seen_ids = []
         for (var i = 0; i < results.rows.length; i++) {
@@ -40,135 +38,119 @@ const bookShowcase = (request, response) => {
 };
 
 
-const search = (request, response) => {
+const search = (request, response, next) => {
     response.status(200).json('TODO');
 };
 
-const SignIn = (request, response) => {
-    var { email, password_hash } = request.body;
+const SignIn = (request, response, next) => {
+    var { email, password } = request.body;
     // var password_hash = crypto.encrypt(password);
     pool.query("SELECT id FROM appuser \
-                WHERE email = $1 AND password_hash = $2", [email, password_hash], (error, user) => {
-        if (error) {
-            throw error;
-        }
+                WHERE email = $1 AND password_hash = $2", [email, password], (err, user) => {
+        if (err) next(err);
         if (typeof user === "undefined") {
             return response.status(404).send();
         }
         // otherwise assign session'data
-        var user_id = user[0].id
+        var user_id = user.rows[0].id
         request.session.loggedin = true;
         request.session.username = user_id;
-        // redirect to author's home page
         return response.status(200).json(user_id);
     });
 };
 
-const SignUp = (request, response) => {
-    var { email, password_hash, name, surname } = request.body;
+const SignUp = (request, response, next) => {
+    var { email, password, name, surname } = request.body;
+    console.log(request.body);
     // var password_hash = crypto.encrypt(password);
-    pool.query("INSERT INTO appuser (email, password, name, surname) \
-                VALUES ($1, $2, $3, $4) RETURNING *", [email, password_hash, name, surname], (error, user) => {
-        if (error) {
-            throw error;
-        }
-        var user_id = user[0].id
+    pool.query("INSERT INTO appuser (email, password_hash, name, surname) \
+                VALUES ($1, $2, $3, $4) RETURNING *", [email, password, name, surname], (err, user) => {
+        if (err) next(err);
+        var user_id = user.rows[0].id
         request.session.loggedin = true;
         request.session.username = user_id;
-        // redirect to author's home page
         return response.status(200).json(user_id);
     });
 };
 
 
 
-const MyBook = (request, response) => {
-    console.log(request.session.username);
-    // if (!request.session.loggedin) return response.status(401).send();
-    pool.query("SELECT book.id, book.title, book.year, book.description, book.edition, booktype.name as book_type \
+const MyBook = (request, response, next) => {
+    if (!request.session.loggedin) return response.status(401).send();
+    const book_id = parseInt(request.params.id);
+    const user_id = request.session.username;
+    pool.query("SELECT book.*, booktype.name as book_type_name \
                 FROM userbook \
                 LEFT JOIN book ON userbook.book_id = book.id \
                 LEFT JOIN booktype ON booktype.id = book.type_id \
-                WHERE user_id = $1 AND book_id = $2", [request.session.username, request.query.book_id], (error, result) => {
-        if (error) {
-            throw error;
-        }
+                WHERE user_id = $1 AND book_id = $2", [user_id, book_id], (err, result) => {
+        if (err) next(err);
         response.status(200).json(result.rows[0]);
     });
 };
 
-const addBook = (request, response) => {
-    // if (!request.session.loggedin) return response.status(401).send();
-    pool.query("SELECT id FROM booktype WHERE name = $1", [request.query.book_type], (error, result) => {
-        if (error) {
-            throw error;
-        }
-        book_type_id = result[0].id;
-
-        pool.query("with temp_table as ( \
-            INSERT INTO book (title, description, year, edition, type_id) VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING RETURNING id \
-        ) \
-        select id from temp_table \
-        union all \
-        select id from book where title = $1 AND description = $2 AND year = $3 AND edition = $4 AND type_id = $5",
-            [request.query.title, request.query.description, request.query.year, request.query.edition, book_type_id],
-            (error, result) => {
-                if (error) {
-                    throw error;
-                }
-                book_id = result[0].id;
-                pool.query("INSERT INTO book (book_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
-                    [book_id, request.session.username],
-                    (error, _) => {
-                        if (error) {
-                            throw error;
-                        }
-                        response.status(201).send();
-                    });
+const addBook = (request, response, next) => {
+    if (!request.session.loggedin) return response.status(401).send();
+    var {book_type_id, title, description, icbn_10, year, edition, course_id} = req.body;
+    pool.query("WITH temp_table AS ( \
+            INSERT INTO book (book_type_id, title, description, icbn_10, year, edition) VALUES ($1, $2, $3, $4, $5, $6) \
+            ON CONFLICT DO NOTHING RETURNING id) \
+            SELECT id FROM temp_table UNION ALL \
+            SELECT id FROM book WHERE book_type_id = $1 AND title = $2 AND description = $3 AND icbn_10 = $4 AND year = $5 AND edition = $6",
+        [book_type_id, title, description, icbn_10, year, edition],
+        (err, result) => {
+            if (err) next(err);
+            book_id = result.rows[0].id;
+            pool.query("INSERT INTO userbook (book_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
+                [book_id, request.session.username],
+                (err, _) => {
+                    if (err) next(err);
+                    // TODO insert authors and course info
+                    response.status(201).send(book_id);
             });
     });
 }
 
-const Swaps = (request, response) => {
+const Swaps = (request, response, next) => {
     if (!request.session.loggedin) return response.status(401).send();
-    pool.query('SELECT * FROM request WHERE receiver_user_id = $1 AND status.name = "pending"',
-        [request.session.username], (error, results) => {
-            if (error) {
-                throw error;
-            }
+    const user_id = request.session.username;
+    pool.query("SELECT request.*, status.name as status_name FROM request \
+                LEFT JOIN status ON status.id = request.status_id \
+                WHERE receiver_user_id = $1 AND status.name = 'pending'",
+        [user_id], (err, results) => {
+            console.log(err);
+            if (err) next(err);
             response.status(200).json(results.rows);
         });
 }
 
-const ScheduleSwap = (request, response) => {
+const ScheduleSwap = (request, response, next) => {
     response.status(200).json('TODO');
 
 }
-const updateBook = (request, response) => {
-    // if (!request.session.loggedin) return response.status(401).send();
+const updateBook = (request, response, next) => {
+    if (!request.session.loggedin) return response.status(401).send();
     const book_id = parseInt(request.params.id);
     const { title, authors, year, description, edition, icbn_10, book_type } = request.body;
 
     response.status(200).json('TODO')
 };
 
-const DeleteBook = (request, response) => {
+const DeleteBook = (request, response, next) => {
     if (!request.session.loggedin) return response.status(401).send();
+    const book_id = parseInt(request.params.id);
+    const user_id = request.session.username;
     pool.query('DELETE FROM userbook WHERE user_id = $1 AND book_id = $2',
-        [request.session.username, request.query.book_id], (error, _) => {
-            if (error) {
-                throw error;
-            }
+        [user_id, book_id], (err, _) => {
+            if (err) next(err);
             response.status(200).send();
         });
 };
 
-const DeleteSwap = (request, response) => {
-    const book_id = parseInt(request.params.id);
-    pool.query('DELETE FROM request WHERE rid = $1', [book_id], (error, _) => {
-        if (error) {
-            throw error;
-        }
+const DeleteSwap = (request, response, next) => {
+    const swap_id = parseInt(request.params.id);
+    pool.query('DELETE FROM request WHERE id = $1', [swap_id], (err, _) => {
+        if (err) next(err);
         response.status(200).send();
     });
 }

@@ -2,7 +2,7 @@
 Agile software project UoL course
 
 ### Dev environment
-To run the backend:
+To run the backend api:
 ```bash
 cd backend
 # run postgres database
@@ -19,7 +19,7 @@ To enter PostgresQL within the docker, run:
 docker exec -it local-postgres psql -U admin -d api
 ```
 
-To start the server run:
+To start the React Native app run:
 ```bash
 cd BookSwapApp
 npx expo start

@@ -1,4 +1,4 @@
-import { Box, FlatList, Flex, HStack, Heading, Image, Pressable, Text, VStack } from 'native-base';
+import { Box, Button, FlatList, Flex, HStack, Heading, Image, Pressable, Text, VStack } from 'native-base';
 import { StyleSheet, View } from 'react-native';
 
 
@@ -75,6 +75,9 @@ const MyBooksPage = () => {
                                 <Text fontSize="xs" color="coolGray.800" alignSelf="flex-start">
                                     Courses: {item.courses}
                                 </Text>
+                                <Button onPress={() => console.log("hello world")}>View Offers for this book</Button>
+                                <Button onPress={() => console.log("hello world")}>Click Me</Button>
+                                <Button onPress={() => console.log("hello world")}>Click Me</Button>
                             </VStack>
                         </HStack>
                     </Box>} keyExtractor={item => item.id} />

@@ -1,5 +1,5 @@
-import { AspectRatio, Box, HStack, Heading, Stack, Text, Image } from 'native-base';
-import { StyleSheet, View, ScrollView } from 'react-native';
+import { Box, HStack, Heading, Stack, Text, Image } from 'native-base';
+import { StyleSheet } from 'react-native';
 
 const BookShowcaseItem = ({ item }) => {
     return (

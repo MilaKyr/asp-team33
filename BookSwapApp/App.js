@@ -1,3 +1,6 @@
+import 'react-native-gesture-handler';
+import { createStackNavigator } from '@react-navigation/stack';
+
 import HomePage from './views/HomePage';
 import { StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
@@ -7,6 +10,9 @@ import { NativeBaseProvider } from "native-base";
 import { LinearGradient } from 'expo-linear-gradient';
 import SearchPage from './views/SearchPage';
 import MyBooksPage from './views/MyBooksPage';
+import SwapOfferPage from './views/SwapOfferPage';
+import MySwapRequestPage from './views/MySwapRequestPage';
+import UploadBookPage from './views/UploadBookPage';
 
 const config = {
   dependencies: {
@@ -16,6 +22,27 @@ const config = {
 
 
 const Tab = createBottomTabNavigator();
+
+const Stack = createStackNavigator();
+
+function MyBooksStack() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen options={{
+        headerShown: false
+      }} name="Books" component={MyBooksPage} />
+      <Stack.Screen options={{
+        headerTitle: 'Offers for Book'
+      }} name="SwapOffer" component={SwapOfferPage} />
+      <Stack.Screen options={{
+        headerTitle: 'My Requests'
+      }} name="SwapRequest" component={MySwapRequestPage} />
+      <Stack.Screen options={{
+        headerTitle: 'Upload New Book'
+      }} name="UploadBook" component={UploadBookPage} />
+    </Stack.Navigator>
+  );
+}
 
 export default function App() {
   return (
@@ -31,7 +58,7 @@ export default function App() {
                 : 'home-outline';
             } else if (route.name === 'Search') {
               iconName = focused ? 'search' : 'search-outline';
-            } else if (route.name === 'Upload') {
+            } else if (route.name === 'MyBooks') {
               iconName = focused ? 'book' : 'book-outline';
             }
 
@@ -47,7 +74,7 @@ export default function App() {
           <Tab.Screen options={{
             title: 'My Books',
             headerTitle: 'My Books'
-          }} name="Upload" component={MyBooksPage} />
+          }} name="MyBooks" component={MyBooksStack} />
         </Tab.Navigator>
       </NavigationContainer>
     </NativeBaseProvider>

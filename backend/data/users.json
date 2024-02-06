@@ -1,0 +1,265 @@
+{
+    "books": [
+        {
+            "book_type": "book",
+            "title": "Computer Security: Principles and Practice",
+            "year": 2011,
+            "description": "In recent years, the need for education in computer security and related topics has grown dramatically – and is essential for anyone studying Computer Science or Computer Engineering. This is the only text available to provide integrated, comprehensive, up-to-date coverage of the broad range of topics in this subject. In addition to an extensive pedagogical program, the book provides unparalleled support for both research and modeling projects, giving students a broader perspective",
+            "edition": 2,
+            "icbn_10": "9780134794105",
+            "course": {
+                "name": "Computer Security"
+            },
+            "image_path": "/assets/computer_security_principles_and_practice.jpg",
+            "authors": [
+                {
+                    "name": "William",
+                    "surname": "Stallings"
+                },
+                {
+                    "name": "Lawrie",
+                    "surname": "Brown"
+                }
+            ],
+            "user_email": [
+                "marisa@bird.com",
+                "lance@hampton.com"
+            ]
+        },
+        {
+            "book_type": "book",
+            "title": "Data Analysis with Python and PySpark",
+            "year": 2022,
+            "description": "Think big about your data! PySpark brings the powerful Spark big data processing engine to the Python ecosystem, letting you seamlessly scale up your data tasks and create lightning-fast pipelines.",
+            "edition": 1,
+            "icbn_10": "1617297208",
+            "course": {
+                "name": "Programming with Data"
+            },
+            "image_path": "/assets/data_analysis_with_python_pyspark.jpg",
+            "authors": [
+                {
+                    "name": "Jonathan",
+                    "surname": "Rioux"
+                }
+            ],
+            "user_email": [
+                "marisa@bird.com",
+                "emmanuel@webb.com"
+            ]
+        },
+        {
+            "book_type": "book",
+            "title": "The CERT Guide to Insider Threats: How to Prevent, Detect, and Respond to Information Technology Crimes (Theft, Sabotage, Fraud)",
+            "edition": 1,
+            "year": 2012,
+            "description": "The CERT® Guide to Insider Threats describes CERT’s findings in practical terms, offering specific guidance and countermeasures that can be immediately applied by executives, managers, security officers, and operational staff within any private, government, or military organization.",
+            "icbn_10": "0321812573",
+            "image_path": "/assets/cert_guide.jpg",
+            "authors": [
+                {
+                    "name": "Dawn",
+                    "surname": "Cappelli"
+                },
+                {
+                    "name": "Andrew",
+                    "surname": "Moore"
+                },
+                {
+                    "name": "Randall",
+                    "surname": "Trzeciak"
+                }
+            ],
+            "course": {
+                "name": "Computer Security"
+            },
+            "user_email": [
+                "brooklyn@estes.com",
+                "emmanuel@webb.com",
+                "kieran@reilly.com"
+            ]
+        },
+        {
+            "book_type": "book",
+            "title": "Applied Cryptography. Protocols, Algorithms, and Source Code in C",
+            "description": "From the world's most renowned security technologist, Bruce Schneier, this 20th Anniversary Edition is the most definitive reference on cryptography ever published and is the seminal work on cryptography. Cryptographic techniques have applications far beyond the obvious uses of encoding and decoding information.",
+            "edition": 20,
+            "year": 2015,
+            "icbn_10": "1119096723",
+            "image_path": "/assets/applied_cryptography.jpg",
+            "authors": [
+                {
+                    "name": "Bruce",
+                    "surname": "Schneier"
+                }
+            ],
+            "course": {
+                "name": "Computer Security"
+            },
+            "user_email": [
+                "magdalena@compton.com",
+                "dana@chambers.com"
+            ]
+        },
+        {
+            "book_type": "book",
+            "title": "Practical Malware Analysis: The Hands-On Guide to Dissecting Malicious Software",
+            "description": "Malware analysis is big business, and attacks can cost a company dearly. When malware breaches your defenses, you need to act quickly to cure current infections and prevent future ones from occurring.",
+            "edition": 1,
+            "year": 2012,
+            "icbn_10": "1593272901",
+            "image_path": "/assets/malware_analysis.jpg",
+            "authors": [
+                {
+                    "name": "Michael",
+                    "surname": "Sikorski"
+                },
+                {
+                    "name": "Andrew",
+                    "surname": "Honig"
+                }
+            ],
+            "course": {
+                "name": "Computer Security"
+            },
+            "user_email": [
+                "ramiro@rios.com",
+                "brycen@jacobson.com"
+            ]
+        },
+        {
+            "book_type": "book",
+            "title": "Learning Python",
+            "description": "Get a comprehensive, in-depth introduction to the core Python language with this hands-on book. Based on author Mark Lutz’s popular training course, this updated fifth edition will help you quickly write efficient, high-quality code with Python.",
+            "edition": 5,
+            "year": 2013,
+            "icbn_10": "1449355730",
+            "authors": [
+                {
+                    "name": "Mark",
+                    "surname": "Lutz"
+                }
+            ],
+            "image_path": "/assets/learning_python.jpg",
+            "course": {
+                "name": "Programming with Data"
+            },
+            "user_email": [
+                "dana@chambers.com",
+                "cindy@carroll.com"
+            ]
+        },
+        {
+            "book_type": "book",
+            "title": "Python for Data Analysis, 2e: Data Wrangling with Pandas, NumPy, and IPython",
+            "description": "Get a comprehensive, in-depth introduction to the core Python language with this hands-on book. Based on author Mark Lutz’s popular training course, this updated fifth edition will help you quickly write efficient, high-quality code with Python.",
+            "edition": 2,
+            "year": 2017,
+            "icbn_10": "1491957662",
+            "authors": [
+                {
+                    "name": "Wes",
+                    "surname": "McKinney"
+                }
+            ],
+            "image_path": "/assets/python_data_analysis.jpeg",
+            "course": {
+                "name": "Programming with Data"
+            },
+            "user_email": [
+                "brycen@jacobson.com"
+            ]
+        }
+    ],
+    "users": [
+        {
+            "name": "Marisa",
+            "surname": "Bird",
+            "email": "marisa@bird.com",
+            "password": "marisa"
+        },
+        {
+            "name": "Brooklyn",
+            "surname": "Estes",
+            "email": "brooklyn@estes.com",
+            "password": "brooklyn"
+        },
+        {
+            "name": "Lance",
+            "surname": "Hampton",
+            "email": "lance@hampton.com",
+            "password": "lance"
+        },
+        {
+            "name": "kieran",
+            "surname": "reilly",
+            "email": "kieran@reilly.com",
+            "password": "kieran"
+        },
+        {
+            "name": "Brycen",
+            "surname": "Jacobson",
+            "email": "brycen@jacobson.com",
+            "password": "brycen"
+        },
+        {
+            "name": "Cindy",
+            "surname": "Carroll",
+            "email": "cindy@carroll.com",
+            "password": "cindy"
+        },
+        {
+            "name": "Dana",
+            "surname": "Chambers",
+            "email": "dana@chambers.com",
+            "password": "dana"
+        },
+        {
+            "name": "Ramiro",
+            "surname": "Rios",
+            "email": "ramiro@rios.com",
+            "password": "ramiro"
+        },
+        {
+            "name": "Magdalena",
+            "surname": "Compton",
+            "email": "magdalena@compton.com",
+            "password": "magdalena"
+        },
+        {
+            "name": "Emmanuel",
+            "surname": "Webb",
+            "email": "emmanuel@webb.com",
+            "password": "emmanuel"
+        }
+    ],
+    "requests": [
+        {
+            "receiver_user": "dana@chambers.com",
+            "sender_user": "brycen@jacobson.com",
+            "book_title": "Learning Python",
+            "status": "pending",
+            "accept_date": null,
+            "reject_date": null,
+            "request_date": "2024-02-01 11:30:30"
+        },
+        {
+            "receiver_user": "dana@chambers.com",
+            "sender_user": "brycen@jacobson.com",
+            "book_title": "Applied Cryptography. Protocols, Algorithms, and Source Code in C",
+            "status": "rejected",
+            "accept_date": null,
+            "reject_date": "2024-02-02 15:15:30",
+            "request_date": "2024-01-27 11:30:30"
+        },
+        {
+            "receiver_user": "brooklyn@estes.com",
+            "sender_user": "ramiro@rios.com",
+            "book_title": "The CERT Guide to Insider Threats: How to Prevent, Detect, and Respond to Information Technology Crimes (Theft, Sabotage, Fraud)",
+            "status": "accepted",
+            "accept_date": "2024-02-05 17:15:30",
+            "reject_date": null,
+            "request_date": "2024-02-01 11:30:30"
+        }
+    ]
+}

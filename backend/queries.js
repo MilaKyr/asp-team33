@@ -1,3 +1,5 @@
+const crypto = require('./crypto');
+
 const Pool = require('pg').Pool;
 const pool = new Pool({
     user: 'admin',
@@ -44,9 +46,9 @@ const search = (request, response, next) => {
 
 const SignIn = (request, response, next) => {
     var { email, password } = request.body;
-    // var password_hash = crypto.encrypt(password);
+    var password_hash = crypto.encrypt(password);
     pool.query("SELECT id FROM appuser \
-                WHERE email = $1 AND password_hash = $2", [email, password], (err, user) => {
+                WHERE email = $1 AND password_hash = $2", [email, password_hash], (err, user) => {
         if (err) next(err);
         if (typeof user === "undefined") {
             return response.status(404).send();
@@ -61,9 +63,9 @@ const SignIn = (request, response, next) => {
 
 const SignUp = (request, response, next) => {
     var { email, password, name, surname } = request.body;
-    // var password_hash = crypto.encrypt(password);
+    var password_hash = crypto.encrypt(password);
     pool.query("INSERT INTO appuser (email, password_hash, name, surname) \
-                VALUES ($1, $2, $3, $4) RETURNING id", [email, password, name, surname], (err, user) => {
+                VALUES ($1, $2, $3, $4) RETURNING id", [email, password_hash, name, surname], (err, user) => {
         if (err) next(err);
         var user_id = user.rows[0].id;
         request.session.loggedin = true;
@@ -90,7 +92,7 @@ const MyBook = (request, response, next) => {
 
 const addBook = (request, response, next) => {
     if (!request.session.loggedin) return response.status(401).send();
-    var {book_type_id, title, description, icbn_10, year, edition, course_id} = req.body;
+    var { book_type_id, title, description, icbn_10, year, edition, course_id } = req.body;
     pool.query("WITH temp_table AS ( \
             INSERT INTO book (book_type_id, title, description, icbn_10, year, edition) VALUES ($1, $2, $3, $4, $5, $6) \
             ON CONFLICT DO NOTHING RETURNING id) \
@@ -106,8 +108,8 @@ const addBook = (request, response, next) => {
                     if (err) next(err);
                     // TODO insert authors and course info
                     response.status(201).send(book_id);
-            });
-    });
+                });
+        });
 }
 
 const Swaps = (request, response, next) => {

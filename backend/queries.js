@@ -75,15 +75,19 @@ const search = (request, response, next) => {
 
 const SignIn = (request, response, next) => {
     var { email, password } = request.body;
-    var password_hash = crypto.encrypt(password);
-    pool.query("SELECT id FROM appuser \
-                WHERE email = $1 AND password_hash = $2", [email, password_hash], (err, user) => {
+    pool.query("SELECT id, password_hash FROM appuser \
+                WHERE email = $1", [email], (err, user) => {
         if (err) next(err);
         if (typeof user === "undefined") {
             return response.status(404).send();
         }
+        var splitted = user.rows[0].password_hash.split(",");
+        var decrypted_password = crypto.decrypt(splitted[0], splitted[1], splitted[2]);
+        if (password != decrypted_password) {
+            return response.status(401).send();
+        }
         // otherwise assign session'data
-        var user_id = user.rows[0].id
+        var user_id = user.rows[0].id;
         request.session.loggedin = true;
         request.session.username = user_id;
         return response.status(200).json(user_id);

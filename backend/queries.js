@@ -1,6 +1,8 @@
 const crypto = require('./crypto');
 
 const Pool = require('pg').Pool;
+const utils = require("./utils");
+
 const pool = new Pool({
     user: 'admin',
     host: 'localhost',
@@ -9,39 +11,66 @@ const pool = new Pool({
     port: 5432,
 });
 
+
+var fullBookStatement = "SELECT appuser.id AS user_id, appuser.name, appuser.surname, \
+book.id AS book_id, book.title, book.description, book.edition, book.icbn_10, \
+author.name||' '||author.surname AS author, bookimage.image, course.name AS course \
+FROM userbook LEFT JOIN appuser ON appuser.id=userbook.user_id \
+LEFT JOIN book ON userbook.book_id = book.id \
+LEFT JOIN bookauthor ON book.id = bookauthor.book_id \
+LEFT JOIN author ON author.id = bookauthor.author_id \
+LEFT JOIN bookimage ON bookimage.book_id = book.id AND bookimage.user_id  = appuser.id \
+LEFT JOIN bookcourse ON bookcourse.book_id = book.id \
+LEFT JOIN course ON course.id = bookcourse.course_id";
+
 const bookShowcase = (request, response, next) => {
-    pool.query("SELECT appuser.id as user_id, appuser.name, appuser.surname,\
-                    book.id as book_id, book.title, book.description, book.edition, book.icbn_10, \
-                    author.name||' '||author.surname as author, bookimage.image \
-                    FROM userbook LEFT JOIN appuser ON appuser.id=userbook.user_id \
-                    LEFT JOIN book ON userbook.book_id = book.id \
-                    LEFT JOIN bookauthor ON book.id = bookauthor.book_id \
-                    LEFT JOIN author ON author.id = bookauthor.author_id \
-                    LEFT JOIN bookimage ON bookimage.book_id = book.id AND bookimage.user_id  = appuser.id", (err, results) => {
+    var statement = fullBookStatement + " LIMIT 20";
+    pool.query(statement, (err, results) => {
         if (err) next(err);
-        var books = []
-        var seen_ids = []
-        for (var i = 0; i < results.rows.length; i++) {
-            var row = results.rows[i];
-            if (seen_ids.includes(row.book_id)) {
-                var selected = books.filter(obj => {
-                    return obj.book_id === row.book_id
-                })[0];
-                selected.authors.push(row.author);
-            } else {
-                seen_ids.push(row.book_id);
-                row["authors"] = [row.author];
-                delete row.author;
-                books.push(row);
-            }
-        }
+        var books = utils.combine_books_with_authors(results.rows);
         response.status(200).json(books);
     });
 };
 
-
 const search = (request, response, next) => {
-    response.status(200).json('TODO');
+    if (Object.keys(request.query).length === 0 && request.query.constructor === Object) {
+        pool.query(fullBookStatement, params, (err, results) => {
+            if (err) next(err);
+            var books = utils.combine_books_with_authors(results.rows);
+            return response.status(200).json(books);
+        });
+    } else {
+        var filter_by = Object.keys(request.query);
+        var params = [request.query[filter_by].toLowerCase()];
+        if (filter_by == "course_id") {
+            statement = fullBookStatement + " WHERE course.id = $1";
+            pool.query(statement, params, (err, results) => {
+                if (err) next(err);
+                var books = utils.combine_books_with_authors(results.rows);
+                return response.status(200).json(books);
+            });
+
+        } else if (filter_by == "title") {
+            statement = fullBookStatement + " WHERE LOWER(book.title) LIKE '%' || $1 || '%'";
+            pool.query(statement, params, (err, results) => {
+                if (err) next(err);
+                var books = utils.combine_books_with_authors(results.rows);
+                return response.status(200).json(books);
+            });
+
+        } else if (filter_by == "author") {
+            statement = fullBookStatement +
+                " WHERE LOWER(author.name) LIKE '%' || $1 || '%' OR LOWER(author.surname) LIKE '%' || $1 || '%'";
+            pool.query(statement, params, (err, results) => {
+                if (err) next(err);
+                var books = utils.combine_books_with_authors(results.rows);
+                return response.status(200).json(books);
+            });
+        }
+        else {
+            return response.status(404).send();
+        }
+    }
 };
 
 const SignIn = (request, response, next) => {

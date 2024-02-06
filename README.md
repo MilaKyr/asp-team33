@@ -15,7 +15,7 @@ docker run --net=host --name local-postgres -e POSTGRES_PASSWORD=password -e POS
 #run js script to fill database with sample data
 npm run seed-db
 # run api
-npm start
+npm run start
 ```
 
 Api docs are available under `http://localhost:8000/api-docs`

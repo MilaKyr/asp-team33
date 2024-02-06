@@ -18,11 +18,9 @@ var courses = new Set();
 var book_types = new Set();
 var swap_status = new Set();
 
-
 async function flush_db() {
     const client = await pool.connect();
-    const _ = await client.query("Truncate booktype, bookauthor, author, bookcourse, course, userbook, bookimage, book, appuser, status, request",
-        [])
+    const _ = await client.query("Truncate booktype, bookauthor, author, bookcourse, course, userbook, bookimage, book, appuser, status, request")
     await client.end();
     console.log("dropped all data");
 }
@@ -41,14 +39,12 @@ function fill_subdata() {
     });
 }
 
-
 function insert_data(tableName, columnNames, values, extras = "") {
     const cs = new pgp.helpers.ColumnSet(columnNames, { table: tableName });
     return pgp.helpers.insert(values, cs) + extras;
 }
 
-
-async function update_status() {
+async function insert_status() {
     var values = []
     for (swap of parsedJSON.requests) {
         values.push({ name: swap.status })
@@ -60,8 +56,7 @@ async function update_status() {
     return statusIds;
 }
 
-
-async function update_authors() {
+async function insert_authors() {
     var values = []
     for (author of authors) {
         var splitted = author.split(",");
@@ -74,7 +69,7 @@ async function update_authors() {
     return authorIds;
 }
 
-async function update_courses() {
+async function insert_courses() {
     var values = [];
     for (course_name of courses) {
         values.push({ name: course_name })
@@ -86,7 +81,7 @@ async function update_courses() {
     return courseIds;
 }
 
-async function update_book_types() {
+async function insert_book_types() {
     var values = [];
     for (book_type of book_types) {
         values.push({ name: book_type })
@@ -98,7 +93,7 @@ async function update_book_types() {
     return bookTypeIds;
 }
 
-async function update_users() {
+async function insert_users() {
     var values = [];
     for (user of parsedJSON.users) {
         var password_hash = crypto.encrypt(user.password);
@@ -111,8 +106,7 @@ async function update_users() {
     return userIds;
 }
 
-
-async function update_books(bookTypeIds) {
+async function insert_books(bookTypeIds) {
     var values = [];
     for (book of parsedJSON.books) {
         var book_type_id = bookTypeIds.get(book.book_type);
@@ -128,8 +122,7 @@ async function update_books(bookTypeIds) {
     return bookIds;
 }
 
-
-async function update_bookimage(bookIds, userIds) {
+async function insert_bookimage(bookIds, userIds) {
     var values = []
     for (book of parsedJSON.books) {
         var book_id = bookIds.get(book.title);
@@ -142,8 +135,7 @@ async function update_bookimage(bookIds, userIds) {
     await pool.query(query);
 }
 
-
-async function update_bookusers(bookIds, userIds) {
+async function insert_bookusers(bookIds, userIds) {
     var values = []
     for (book of parsedJSON.books) {
         var book_id = bookIds.get(book.title);
@@ -156,8 +148,7 @@ async function update_bookusers(bookIds, userIds) {
     await pool.query(query);
 }
 
-
-async function update_bookcourses(bookIds, courseIds) {
+async function insert_bookcourses(bookIds, courseIds) {
     var values = []
     for (book of parsedJSON.books) {
         var book_id = bookIds.get(book.title);
@@ -168,7 +159,7 @@ async function update_bookcourses(bookIds, courseIds) {
     await pool.query(query);
 }
 
-async function update_bookauthors(bookIds, authorIds) {
+async function insert_bookauthors(bookIds, authorIds) {
     var values = []
     for (book of parsedJSON.books) {
         var book_id = bookIds.get(book.title);
@@ -181,8 +172,7 @@ async function update_bookauthors(bookIds, authorIds) {
     await pool.query(query);
 }
 
-
-async function update_requests(userIds, bookIds, statusIds) {
+async function insert_requests(userIds, bookIds, statusIds) {
     var values = []
     for (swap of parsedJSON.requests) {
         var receiver_user_id = userIds.get(swap.receiver_user);
@@ -205,17 +195,17 @@ async function update_requests(userIds, bookIds, statusIds) {
 
 async function insert_all_data() {
     console.log("starting to fill database ...");
-    var statusIds = await update_status();
-    var authorIds = await update_authors();
-    var courseIds = await update_courses();
-    var bookTypeIds = await update_book_types();
-    var userIds = await update_users();
-    var bookIds = await update_books(bookTypeIds);
-    await update_bookimage(bookIds, userIds);
-    await update_bookusers(bookIds, userIds);
-    await update_bookcourses(bookIds, courseIds);
-    await update_bookauthors(bookIds, authorIds);
-    await update_requests(userIds, bookIds, statusIds);
+    var statusIds = await insert_status();
+    var authorIds = await insert_authors();
+    var courseIds = await insert_courses();
+    var bookTypeIds = await insert_book_types();
+    var userIds = await insert_users();
+    var bookIds = await insert_books(bookTypeIds);
+    await insert_bookimage(bookIds, userIds);
+    await insert_bookusers(bookIds, userIds);
+    await insert_bookcourses(bookIds, courseIds);
+    await insert_bookauthors(bookIds, authorIds);
+    await insert_requests(userIds, bookIds, statusIds);
 }
 
 async function main() {
@@ -228,28 +218,4 @@ async function main() {
     }
 }
 
-
 main();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

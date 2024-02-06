@@ -97,7 +97,7 @@ async function insert_users() {
     var values = [];
     for (user of parsedJSON.users) {
         var password_hash = crypto.encrypt(user.password);
-        values.push({ name: book_type, surname: user.surname, email: user.email, password_hash: password_hash })
+        values.push({ name: user.name, surname: user.surname, email: user.email, password_hash: password_hash })
     }
     var query = insert_data("appuser", ["name", "surname", "email", "password_hash"], values, " RETURNING id");
     const res = await pool.query(query);

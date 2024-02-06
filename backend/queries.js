@@ -11,37 +11,30 @@ const pool = new Pool({
     port: 5432,
 });
 
+
+var fullBookStatement = "SELECT appuser.id AS user_id, appuser.name, appuser.surname, \
+book.id AS book_id, book.title, book.description, book.edition, book.icbn_10, \
+author.name||' '||author.surname AS author, bookimage.image, course.name AS course \
+FROM userbook LEFT JOIN appuser ON appuser.id=userbook.user_id \
+LEFT JOIN book ON userbook.book_id = book.id \
+LEFT JOIN bookauthor ON book.id = bookauthor.book_id \
+LEFT JOIN author ON author.id = bookauthor.author_id \
+LEFT JOIN bookimage ON bookimage.book_id = book.id AND bookimage.user_id  = appuser.id \
+LEFT JOIN bookcourse ON bookcourse.book_id = book.id \
+LEFT JOIN course ON course.id = bookcourse.course_id";
+
 const bookShowcase = (request, response, next) => {
-    pool.query("SELECT appuser.id as user_id, appuser.name, appuser.surname,\
-                    book.id as book_id, book.title, book.description, book.edition, book.icbn_10, \
-                    author.name||' '||author.surname as author, bookimage.image \
-                    FROM userbook LEFT JOIN appuser ON appuser.id=userbook.user_id \
-                    LEFT JOIN book ON userbook.book_id = book.id \
-                    LEFT JOIN bookauthor ON book.id = bookauthor.book_id \
-                    LEFT JOIN author ON author.id = bookauthor.author_id \
-                    LEFT JOIN bookimage ON bookimage.book_id = book.id AND bookimage.user_id  = appuser.id LIMIT 20", 
-                    (err, results) => {
+    var statement = fullBookStatement + " LIMIT 20";
+    pool.query(statement, (err, results) => {
         if (err) next(err);
         var books = utils.combine_books_with_authors(results.rows);
         response.status(200).json(books);
     });
 };
 
-
 const search = (request, response, next) => {
-    var statement = "SELECT appuser.id as user_id, appuser.name, appuser.surname,\
-                    book.id as book_id, book.title, book.description, book.edition, book.icbn_10, \
-                    author.name||' '||author.surname as author, bookimage.image, course.name as course \
-                    FROM userbook \
-                    LEFT JOIN appuser ON appuser.id=userbook.user_id \
-                    LEFT JOIN book ON userbook.book_id = book.id \
-                    LEFT JOIN bookauthor ON book.id = bookauthor.book_id \
-                    LEFT JOIN author ON author.id = bookauthor.author_id \
-                    LEFT JOIN bookimage ON bookimage.book_id = book.id AND bookimage.user_id  = appuser.id \
-                    LEFT JOIN bookcourse ON book.id = bookcourse.book_id \
-                    LEFT JOIN course ON bookcourse.course_id = course.id";
     if (Object.keys(request.query).length === 0 && request.query.constructor === Object) {
-        pool.query(statement, params, (err, results) => {
+        pool.query(fullBookStatement, params, (err, results) => {
             if (err) next(err);
             var books = utils.combine_books_with_authors(results.rows);
             return response.status(200).json(books);
@@ -50,23 +43,24 @@ const search = (request, response, next) => {
         var filter_by = Object.keys(request.query);
         var params = [request.query[filter_by].toLowerCase()];
         if (filter_by == "course_id") {
-            statement += " WHERE course.id = $1";
-             pool.query(statement, params, (err, results) => {
-                if (err) next(err);
-                var books = utils.combine_books_with_authors(results.rows);
-                return response.status(200).json(books);
-            });
-    
-        } else if (filter_by == "title") {
-            statement += " WHERE LOWER(book.title) LIKE '%' || $1 || '%'";
+            statement = fullBookStatement + " WHERE course.id = $1";
             pool.query(statement, params, (err, results) => {
                 if (err) next(err);
                 var books = utils.combine_books_with_authors(results.rows);
                 return response.status(200).json(books);
             });
-    
-        }else if (filter_by == "author") {
-            statement += " WHERE LOWER(author.name) LIKE '%' || $1 || '%' OR LOWER(author.surname) LIKE '%' || $1 || '%'";
+
+        } else if (filter_by == "title") {
+            statement = fullBookStatement + " WHERE LOWER(book.title) LIKE '%' || $1 || '%'";
+            pool.query(statement, params, (err, results) => {
+                if (err) next(err);
+                var books = utils.combine_books_with_authors(results.rows);
+                return response.status(200).json(books);
+            });
+
+        } else if (filter_by == "author") {
+            statement = fullBookStatement +
+                " WHERE LOWER(author.name) LIKE '%' || $1 || '%' OR LOWER(author.surname) LIKE '%' || $1 || '%'";
             pool.query(statement, params, (err, results) => {
                 if (err) next(err);
                 var books = utils.combine_books_with_authors(results.rows);

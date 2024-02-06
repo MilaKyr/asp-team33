@@ -1,6 +1,9 @@
 # asp-team33
 Agile software project UoL course
 
+### Sample data
+The file is under `data/users.json`
+
 ### Dev environment
 To run the backend api:
 ```bash
@@ -8,6 +11,9 @@ cd backend
 # run postgres database
 docker build -t postgres ./
 docker run --net=host --name local-postgres -e POSTGRES_PASSWORD=password -e POSTGRES_USER=admin -d postgres
+
+#run js script to fill database with sample data
+npm run seed-db
 # run api
 npm start
 ```

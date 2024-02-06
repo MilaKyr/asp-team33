@@ -1,3 +1,5 @@
+const pgp = require('pg-promise')({ capSQL: true });
+
 function combine_books_with_authors(rows) {
     var books = []
     var seen_ids = []
@@ -19,6 +21,12 @@ function combine_books_with_authors(rows) {
     return books;
 }
 
+function insert_data(tableName, columnNames, values, extras = "") {
+    const cs = new pgp.helpers.ColumnSet(columnNames, { table: tableName });
+    return pgp.helpers.insert(values, cs) + extras;
+}
+
 module.exports = {
-    combine_books_with_authors
+    combine_books_with_authors,
+    insert_data,
 };

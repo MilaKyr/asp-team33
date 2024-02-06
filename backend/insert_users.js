@@ -1,7 +1,7 @@
 var fs = require('fs');
 const crypto = require('./crypto');
+const utils = require('./utils');
 const Pool = require('pg').Pool;
-const pgp = require('pg-promise')({ capSQL: true });
 
 const parsedJSON = JSON.parse(fs.readFileSync('./data/users.json', 'utf8'));
 
@@ -39,17 +39,12 @@ function fill_subdata() {
     });
 }
 
-function insert_data(tableName, columnNames, values, extras = "") {
-    const cs = new pgp.helpers.ColumnSet(columnNames, { table: tableName });
-    return pgp.helpers.insert(values, cs) + extras;
-}
-
 async function insert_status() {
     var values = []
     for (swap of parsedJSON.requests) {
         values.push({ name: swap.status })
     }
-    var query = insert_data("status", ["name"], values, " RETURNING id");
+    var query = utils.insert_data("status", ["name"], values, " RETURNING id");
     const res = await pool.query(query);
     const statusIds = new Map();
     values.map((key, index) => (statusIds.set(key.name, res.rows[index].id)));
@@ -62,7 +57,7 @@ async function insert_authors() {
         var splitted = author.split(",");
         values.push({ name: splitted[0], surname: splitted[1] })
     }
-    var query = insert_data("author", ["name", "surname"], values, " RETURNING id");
+    var query = utils.insert_data("author", ["name", "surname"], values, " RETURNING id");
     const res = await pool.query(query);
     const authorIds = new Map();
     values.map((key, index) => (authorIds.set(key.name + "," + key.surname, res.rows[index].id)));
@@ -74,7 +69,7 @@ async function insert_courses() {
     for (course_name of courses) {
         values.push({ name: course_name })
     }
-    var query = insert_data("course", ["name"], values, " RETURNING id");
+    var query = utils.insert_data("course", ["name"], values, " RETURNING id");
     const res = await pool.query(query);
     const courseIds = new Map();
     values.map((key, index) => (courseIds.set(key.name, res.rows[index].id)));
@@ -86,7 +81,7 @@ async function insert_book_types() {
     for (book_type of book_types) {
         values.push({ name: book_type })
     }
-    var query = insert_data("booktype", ["name"], values, " RETURNING id");
+    var query = utils.insert_data("booktype", ["name"], values, " RETURNING id");
     const res = await pool.query(query);
     const bookTypeIds = new Map();
     values.map((key, index) => (bookTypeIds.set(key.name, res.rows[index].id)));
@@ -99,7 +94,7 @@ async function insert_users() {
         var password_hash = crypto.encrypt(user.password);
         values.push({ name: user.name, surname: user.surname, email: user.email, password_hash: password_hash })
     }
-    var query = insert_data("appuser", ["name", "surname", "email", "password_hash"], values, " RETURNING id");
+    var query = utils.insert_data("appuser", ["name", "surname", "email", "password_hash"], values, " RETURNING id");
     const res = await pool.query(query);
     const userIds = new Map();
     values.map((key, index) => (userIds.set(key.email, res.rows[index].id)));
@@ -115,7 +110,7 @@ async function insert_books(bookTypeIds) {
             description: book.description, edition: book.edition
         })
     }
-    var query = insert_data("book", ["type_id", "title", "year", "icbn_10", "description", "edition"], values, " RETURNING id");
+    var query = utils.insert_data("book", ["type_id", "title", "year", "icbn_10", "description", "edition"], values, " RETURNING id");
     const res = await pool.query(query);
     const bookIds = new Map();
     values.map((key, index) => (bookIds.set(key.title, res.rows[index].id)));
@@ -131,7 +126,7 @@ async function insert_bookimage(bookIds, userIds) {
             values.push({ book_id: book_id, user_id: user_id, image: "pg_read_binary_file(" + book.image_path + ")" })
         }
     }
-    var query = insert_data("bookimage", ['book_id', 'user_id', 'image'], values);
+    var query = utils.insert_data("bookimage", ['book_id', 'user_id', 'image'], values);
     await pool.query(query);
 }
 
@@ -144,7 +139,7 @@ async function insert_bookusers(bookIds, userIds) {
             values.push({ book_id: book_id, user_id: user_id })
         }
     }
-    var query = insert_data("userbook", ['book_id', 'user_id'], values);
+    var query = utils.insert_data("userbook", ['book_id', 'user_id'], values);
     await pool.query(query);
 }
 
@@ -155,7 +150,7 @@ async function insert_bookcourses(bookIds, courseIds) {
         var course_id = courseIds.get(book.course.name);
         values.push({ book_id: book_id, course_id: course_id })
     }
-    var query = insert_data("bookcourse", ['book_id', 'course_id'], values);
+    var query = utils.insert_data("bookcourse", ['book_id', 'course_id'], values);
     await pool.query(query);
 }
 
@@ -168,7 +163,7 @@ async function insert_bookauthors(bookIds, authorIds) {
             values.push({ book_id: book_id, author_id: author_id })
         }
     }
-    var query = insert_data("bookauthor", ['book_id', 'author_id'], values);
+    var query = utils.insert_data("bookauthor", ['book_id', 'author_id'], values);
     await pool.query(query);
 }
 
@@ -187,7 +182,7 @@ async function insert_requests(userIds, bookIds, statusIds) {
             reject_date: swap.reject_date
         })
     }
-    var query = insert_data("request", ['receiver_user_id', 'sender_user_id',
+    var query = utils.insert_data("request", ['receiver_user_id', 'sender_user_id',
         "book_id", "status_id", "request_date",
         "accept_date", "reject_date"], values);
     await pool.query(query);

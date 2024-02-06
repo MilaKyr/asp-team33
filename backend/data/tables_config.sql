@@ -19,9 +19,9 @@ CREATE TABLE book(
     id SERIAL PRIMARY KEY,
     type_id integer,
     icbn_10 varchar(25),
-    title varchar(150) NOT NULL,
+    title text NOT NULL,
     year integer,
-    description varchar(512) NOT NULL,
+    description text NOT NULL,
     edition integer,
     FOREIGN KEY(type_id) REFERENCES BookType(id) ON DELETE CASCADE
 );

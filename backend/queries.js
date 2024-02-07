@@ -16,7 +16,7 @@ var AVAILABLE_FILTERS = ["course_id", "title", "author"];
 var fullBookStatement = "SELECT appuser.id AS user_id, appuser.name, appuser.surname, \
 book.id AS book_id, book.title, book.description, book.edition, book.icbn_10, \
 author.name||' '||author.surname AS author, bookimage.image, course.name AS course \
-FROM userbook LEFT JOIN appuser ON appuser.id=userbook.user_id \
+FROM userbook LEFT JOIN appuser ON appuser.id = userbook.user_id \
 LEFT JOIN book ON userbook.book_id = book.id \
 LEFT JOIN bookauthor ON book.id = bookauthor.book_id \
 LEFT JOIN author ON author.id = bookauthor.author_id \
@@ -26,7 +26,7 @@ LEFT JOIN course ON course.id = bookcourse.course_id";
 
 const bookShowcase = async (request, response) => {
     try {
-        var statement = fullBookStatement + " LIMIT 20";
+        var statement = fullBookStatement + " LIMIT 10";
         const results = await pool.query(statement);
         var books = utils.combine_books_with_authors(results.rows);
         response.status(200).json(books);

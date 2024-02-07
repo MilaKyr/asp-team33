@@ -16,7 +16,8 @@ router.put('/update_book/:id', db.updateBook);
 router.post('/sign_in', db.SignIn);
 router.post('/sign_up', db.SignUp);
 router.get('/my_swaps', db.Swaps);
-router.post('/schedule_swap', db.ScheduleSwap);  // TODO
+router.post('/schedule_swap', db.ScheduleSwap);
+router.put('/update_swap/:id', db.UpdateSwap);
 router.delete('/my_swaps/:id', db.DeleteSwap);
 router.delete('/my_book/:id', db.DeleteBook);
 router.post('/add_image/:id', upload.single('image'), db.addImage);

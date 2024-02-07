@@ -1,7 +1,7 @@
 const crypto = require('./crypto');
-const fs = require('fs');
 const Pool = require('pg').Pool;
 const utils = require("./utils");
+const { request } = require('http');
 
 const pool = new Pool({
     user: 'admin',
@@ -32,7 +32,7 @@ const bookShowcase = async (request, response) => {
         response.status(200).json(books);
     } catch (err) {
         console.error(err);
-        response.status(500).send();
+        return response.status(500).send();
     }
 };
 
@@ -63,7 +63,7 @@ const Search = async (request, response) => {
         }
     } catch (err) {
         console.error(err);
-        response.status(500).send();
+        return response.status(500).send();
     }
 };
 
@@ -72,8 +72,8 @@ const SignIn = async (request, response) => {
         var { email, password } = request.body;
         var statement = "SELECT id, password_hash FROM appuser WHERE email = $1";
         const user = await pool.query(statement, [email]);
-        if (typeof user === "undefined") {
-            return response.status(404).send();
+        if (typeof user === "undefined" || user.rows.length == 0) {
+            return response.status(401).send();
         }
         var splitted = user.rows[0].password_hash.split(",");
         var decrypted_password = crypto.decrypt(splitted[0], splitted[1], splitted[2]);
@@ -87,7 +87,7 @@ const SignIn = async (request, response) => {
         return response.status(200).json(user_id);
     } catch (err) {
         console.error(err);
-        response.status(500).send();
+        return response.status(500).send();
     }
 };
 
@@ -103,7 +103,7 @@ const SignUp = async (request, response) => {
         return response.status(200).json(user_id);
     } catch (err) {
         console.error(err);
-        response.status(500).send();
+        return response.status(500).send();
     }
 };
 
@@ -117,7 +117,7 @@ const MyBook = async (request, response) => {
         response.status(200).json(result.rows[0]);
     } catch (err) {
         console.error(err);
-        response.status(500).send();
+        return response.status(404).send();
     }
 };
 
@@ -168,7 +168,7 @@ const addBook = async (request, response) => {
         response.status(200).json(book_id);
     } catch (err) {
         console.error(err);
-        response.status(500).send();
+        return response.status(404).send();
     }
 }
 
@@ -195,7 +195,7 @@ const updateBook = async (request, response) => {
         response.status(200).send();
     } catch (err) {
         console.error(err);
-        response.status(500).send();
+        return response.status(404).send();
     }
 };
 
@@ -205,18 +205,31 @@ const Swaps = async (request, response) => {
         const user_id = request.session.username;
         const statement = "SELECT request.*, status.name as status_name FROM request \
         LEFT JOIN status ON status.id = request.status_id \
-        WHERE receiver_user_id = $1 AND status.name = 'pending'";
+        WHERE receiver_user_id = $1";
         const results = await pool.query(statement, [user_id]);
         return response.status(200).json(results.rows);
     } catch (err) {
         console.error(err);
-        response.status(500).send();
+        return response.status(500).send();
     }
 }
 
 const ScheduleSwap = async (request, response) => {
-    
-
+    if (!request.session.loggedin) return response.status(401).send();
+    try {
+        var { receiver_id, book_id } = request.body;
+        const user_id = request.session.username;
+        const now = new Date(Date.now()).toISOString();
+        const status = await pool.query("SELECT id FROM status WHERE name = 'pending'");
+        const status_id = status.rows[0].id;
+        const statement = "INSERT INTO request (receiver_user_id, sender_user_id, book_id, status_id, request_date) \
+         VALUES ($1, $2, $3, $4, $5)";
+        await pool.query(statement, [receiver_id, user_id, book_id, status_id, now]);
+        return response.status(200).send();
+    } catch (err) {
+        console.error(err);
+        return response.status(404).send();
+    }
 }
 
 const DeleteBook = async (request, response) => {
@@ -226,10 +239,10 @@ const DeleteBook = async (request, response) => {
         const book_id = parseInt(request.params.id);
         const user_id = request.session.username;
         await pool.query(statement, [user_id, book_id]);
-        response.status(200).send();
+        return response.status(200).send();
     } catch (err) {
         console.error(err);
-        response.status(500).send();
+        return response.status(404).send();
     }
 };
 
@@ -239,10 +252,10 @@ const DeleteSwap = async (request, response,) => {
         const swap_id = parseInt(request.params.id);
         const statement = 'DELETE FROM request WHERE id = $1';
         await pool.query(statement, [swap_id]);
-        response.status(200).send();
+        return response.status(200).send();
     } catch (err) {
         console.error(err);
-        response.status(500).send();
+        return response.status(404).send();
     }
 }
 
@@ -252,7 +265,6 @@ const addImage = async (request, response) => {
         return response.status(400).send();
     }
     try {
-        console.log(request.file);
         const statement = 'INSERT INTO bookimage (user_id, book_id, image) VALUES ($1, $2, $3 )';
         const book_id = parseInt(request.params.id);
         const user_id = request.session.username;
@@ -260,7 +272,42 @@ const addImage = async (request, response) => {
         return response.status(201).send();
     } catch (err) {
         console.error(err);
-        response.status(500).send();
+        return response.status(404).send();
+    }
+}
+
+const UpdateSwap = async (request, response) => {
+    if (!request.session.loggedin) return response.status(401).send();
+    try {
+        const swap_id = request.params.id;
+        var { status_id } = request.body;
+        var status = await pool.query("SELECT name FROM status WHERE id = $1", [status_id]);
+        if (typeof status === 'undefined' || status.rows.length == 0) {
+            return response.status(404).send();
+        }
+        const status_name = status.rows[0].name;
+        const datefield = status_name == "accepted" ? "accept_date" : "reject_date";
+        const now = new Date(Date.now()).toISOString();
+        const statement = "UPDATE request SET status_id = $1, " + datefield + " = $2 WHERE id = $3 RETURNING receiver_user_id, book_id";
+        try {
+            let result = await pool.query(statement, [status_id, now, swap_id]);
+            if (status_name == 'accepted') {
+                var receiver_user_id = result.rows[0].receiver_user_id;
+                var sender = await pool.query("SELECT name, email FROM appuser WHERE id = $1", [receiver_user_id]);
+                var book_id = result.rows[0].book_id;
+                var bookStatement = fullBookStatement + " WHERE book.id = $1";
+                var book = await pool.query(bookStatement, [book_id]);
+                book = utils.combine_books_with_authors(book.rows);
+                await utils.send_email(sender.rows[0], book);
+            }
+            return response.status(200).send();
+        } catch (err) {
+            console.error(err);
+            return response.status(404).send();
+        }
+    } catch (err) {
+        console.error(err);
+        return response.status(500).send();
     }
 }
 
@@ -277,4 +324,5 @@ module.exports = {
     DeleteSwap,
     ScheduleSwap,
     addImage,
+    UpdateSwap,
 };

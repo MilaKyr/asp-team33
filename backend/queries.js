@@ -1,5 +1,5 @@
 const crypto = require('./crypto');
-
+const fs = require('fs');
 const Pool = require('pg').Pool;
 const utils = require("./utils");
 
@@ -112,10 +112,7 @@ const MyBook = async (request, response) => {
     try {
         const book_id = request.params.id;
         const user_id = request.session.username;
-        var statement = "SELECT book.*, booktype.name as book_type_name FROM userbook \
-        LEFT JOIN book ON userbook.book_id = book.id \
-        LEFT JOIN booktype ON booktype.id = book.type_id \
-        WHERE user_id = $1 AND book_id = $2";
+        var statement = fullBookStatement + " WHERE bookimage.user_id = $1 AND bookimage.book_id = $2";
         const result = await pool.query(statement, [user_id, book_id]);
         response.status(200).json(result.rows[0]);
     } catch (err) {
@@ -218,7 +215,7 @@ const Swaps = async (request, response) => {
 }
 
 const ScheduleSwap = async (request, response) => {
-    response.status(200).json('TODO');
+    
 
 }
 
@@ -251,7 +248,20 @@ const DeleteSwap = async (request, response,) => {
 
 const addImage = async (request, response) => {
     if (!request.session.loggedin) return response.status(401).send();
-    response.status(200).json('TODO');
+    if (!request.file) {
+        return response.status(400).send();
+    }
+    try {
+        console.log(request.file);
+        const statement = 'INSERT INTO bookimage (user_id, book_id, image) VALUES ($1, $2, $3 )';
+        const book_id = parseInt(request.params.id);
+        const user_id = request.session.username;
+        await pool.query(statement, [user_id, book_id, request.file.buffer]);
+        return response.status(201).send();
+    } catch (err) {
+        console.error(err);
+        response.status(500).send();
+    }
 }
 
 module.exports = {

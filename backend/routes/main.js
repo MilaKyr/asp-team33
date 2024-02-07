@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../queries');
+const multer = require('multer');
 
+const upload = multer({destination: 'data/uploads'})
 
 router.get('/health_check', (request, response) => {
   response.status(200).send();
@@ -17,7 +19,7 @@ router.get('/my_swaps', db.Swaps);
 router.post('/schedule_swap', db.ScheduleSwap);  // TODO
 router.delete('/my_swaps/:id', db.DeleteSwap);
 router.delete('/my_book/:id', db.DeleteBook);
-router.post('/add_image/:id', db.addImage);  // TODO
+router.post('/add_image/:id', upload.single('image'), db.addImage);
 
 
 

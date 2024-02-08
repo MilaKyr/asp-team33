@@ -1,17 +1,9 @@
 var fs = require('fs');
 const crypto = require('./crypto');
 const utils = require('./utils');
-const Pool = require('pg').Pool;
+const { getPool } = require('./postgresql');
 
 const parsedJSON = JSON.parse(fs.readFileSync('./data/users.json', 'utf8'));
-
-const pool = new Pool({
-    user: 'admin',
-    host: 'localhost',
-    database: 'api',
-    password: 'password',
-    port: 5432,
-});
 
 var authors = new Set();
 var courses = new Set();
@@ -45,7 +37,7 @@ async function insert_status() {
         values.push({ name: swap.status })
     }
     var query = utils.insert_data("status", ["name"], values, " RETURNING id");
-    const res = await pool.query(query);
+    const res = await getPool().query(query);
     const statusIds = new Map();
     values.map((key, index) => (statusIds.set(key.name, res.rows[index].id)));
     return statusIds;
@@ -58,7 +50,7 @@ async function insert_authors() {
         values.push({ name: splitted[0], surname: splitted[1] })
     }
     var query = utils.insert_data("author", ["name", "surname"], values, " RETURNING id");
-    const res = await pool.query(query);
+    const res = await getPool().query(query);
     const authorIds = new Map();
     values.map((key, index) => (authorIds.set(key.name + "," + key.surname, res.rows[index].id)));
     return authorIds;
@@ -70,7 +62,7 @@ async function insert_courses() {
         values.push({ name: course_name })
     }
     var query = utils.insert_data("course", ["name"], values, " RETURNING id");
-    const res = await pool.query(query);
+    const res = await getPool().query(query);
     const courseIds = new Map();
     values.map((key, index) => (courseIds.set(key.name, res.rows[index].id)));
     return courseIds;
@@ -82,7 +74,7 @@ async function insert_book_types() {
         values.push({ name: book_type })
     }
     var query = utils.insert_data("booktype", ["name"], values, " RETURNING id");
-    const res = await pool.query(query);
+    const res = await getPool().query(query);
     const bookTypeIds = new Map();
     values.map((key, index) => (bookTypeIds.set(key.name, res.rows[index].id)));
     return bookTypeIds;
@@ -95,7 +87,7 @@ async function insert_users() {
         values.push({ name: user.name, surname: user.surname, email: user.email, password_hash: password_hash })
     }
     var query = utils.insert_data("appuser", ["name", "surname", "email", "password_hash"], values, " RETURNING id");
-    const res = await pool.query(query);
+    const res = await getPool().query(query);
     const userIds = new Map();
     values.map((key, index) => (userIds.set(key.email, res.rows[index].id)));
     return userIds;
@@ -111,7 +103,7 @@ async function insert_books(bookTypeIds) {
         })
     }
     var query = utils.insert_data("book", ["type_id", "title", "year", "icbn_10", "description", "edition"], values, " RETURNING id");
-    const res = await pool.query(query);
+    const res = await getPool().query(query);
     const bookIds = new Map();
     values.map((key, index) => (bookIds.set(key.title, res.rows[index].id)));
     return bookIds;
@@ -127,7 +119,7 @@ async function insert_bookimage(bookIds, userIds) {
         }
     }
     var query = utils.insert_data("bookimage", ['book_id', 'user_id', 'image'], values);
-    await pool.query(query);
+    await getPool().query(query);
 }
 
 async function insert_bookusers(bookIds, userIds) {
@@ -140,7 +132,7 @@ async function insert_bookusers(bookIds, userIds) {
         }
     }
     var query = utils.insert_data("userbook", ['book_id', 'user_id'], values);
-    await pool.query(query);
+    await getPool().query(query);
 }
 
 async function insert_bookcourses(bookIds, courseIds) {
@@ -151,7 +143,7 @@ async function insert_bookcourses(bookIds, courseIds) {
         values.push({ book_id: book_id, course_id: course_id })
     }
     var query = utils.insert_data("bookcourse", ['book_id', 'course_id'], values);
-    await pool.query(query);
+    await getPool().query(query);
 }
 
 async function insert_bookauthors(bookIds, authorIds) {
@@ -164,7 +156,7 @@ async function insert_bookauthors(bookIds, authorIds) {
         }
     }
     var query = utils.insert_data("bookauthor", ['book_id', 'author_id'], values);
-    await pool.query(query);
+    await getPool().query(query);
 }
 
 async function insert_requests(userIds, bookIds, statusIds) {
@@ -185,7 +177,7 @@ async function insert_requests(userIds, bookIds, statusIds) {
     var query = utils.insert_data("request", ['receiver_user_id', 'sender_user_id',
         "book_id", "status_id", "request_date",
         "accept_date", "reject_date"], values);
-    await pool.query(query);
+    await getPool().query(query);
 }
 
 async function insert_all_data() {

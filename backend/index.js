@@ -8,6 +8,8 @@ const routes = require('./routes/main');
 const helmet = require('helmet');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./docs/swagger.json');
+const config = require('config');
+const server = config.get('server');
 
 // set the app to parse nested objects
 app.use(express.urlencoded({extended: true})); 
@@ -35,6 +37,6 @@ app.use('/api/', routes);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.disable('x-powered-by');
 
-app.listen(port, () => {
-  console.log(`App running on port ${port}.`);
+app.listen(server.port, server.host, () => {
+  console.log(`App running on port ${server.port}.`);
 });

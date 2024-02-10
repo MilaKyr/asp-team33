@@ -1,10 +1,10 @@
 FROM postgres:alpine
 
 WORKDIR assets
-COPY . /
+COPY data/assets/ .
 
 WORKDIR /
-COPY dummy_data.sql /docker-entrypoint-initdb.d/
+COPY data/tables_config.sql /docker-entrypoint-initdb.d/
 
 
 

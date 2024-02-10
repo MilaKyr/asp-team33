@@ -1,0 +1,29 @@
+{
+  "server": {
+    "host": "localhost",
+    "port": 8000
+  },
+  "database": {
+    "user": "admin",
+    "host": "localhost",
+    "database": "api",
+    "password": "password",
+    "port": 5432
+  },
+  "crypto_key": "RVRrt150sMijJktfIOyo7h0GoWZc84N4KLw9FhGIRhU=",
+  "search_filters": [
+    "course_id",
+    "title",
+    "author"
+  ],
+  "email_transporter": {
+    "host": "smtp.forwardemail.net",
+    "port": 465,
+    "secure": true,
+    "auth": {
+      "user": "REPLACE-WITH-YOUR-ALIAS@YOURDOMAIN.COM",
+      "pass": "REPLACE-WITH-YOUR-GENERATED-PASSWORD"
+    },
+    "from": "bookswap@app.com"
+  }
+}

@@ -1,9 +1,9 @@
 const crypto = require('./crypto');
 const utils = require("./utils");
 const { getPool } = require('./postgresql');
+const config = require('config');
+const AVAILABLE_FILTERS = config.get('search_filters');
 
-
-var AVAILABLE_FILTERS = ["course_id", "title", "author"];
 
 var fullBookSelect = "SELECT appuser.id AS user_id, appuser.name, appuser.surname, \
 book.id AS book_id, book.title, book.description, book.edition, book.icbn_10, \

@@ -1,5 +1,7 @@
 const pgp = require('pg-promise')({ capSQL: true });
 const nodemailer = require("nodemailer");
+const config = require('config');
+const email_transport = config.get('email_transporter');
 
 function combine_books_with_authors(rows) {
     var books = []
@@ -35,18 +37,18 @@ function update_data(tableName, columnNames, values, where_column = "",) {
 
 async function send_email(user, book) {
     var transporter = nodemailer.createTransport({
-        host: "smtp.forwardemail.net",
-        port: 465,
-        secure: true,
+        host: email_transport.host,
+        port: email_transport.port,
+        secure: email_transport.secure,
         auth: {
             // TODO: replace `user` and `pass` values from <https://forwardemail.net>
-            user: "REPLACE-WITH-YOUR-ALIAS@YOURDOMAIN.COM",
-            pass: "REPLACE-WITH-YOUR-GENERATED-PASSWORD",
+            user: email_transport.auth.user,
+            pass: email_transport.auth.pass,
           },
     });
 
     var message = {
-        from: "bookswap@app.com",
+        from: email_transport.from,
         to: user.email,
         subject: "New information about your book swap!",
         text: "Hurra! Your swap request was accepted. \

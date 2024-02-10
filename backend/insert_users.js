@@ -11,7 +11,7 @@ var book_types = new Set();
 var swap_status = new Set();
 
 async function flush_db() {
-    const client = await pool.connect();
+    const client = await getPool().connect();
     const _ = await client.query("Truncate booktype, bookauthor, author, bookcourse, course, userbook, bookimage, book, appuser, status, request")
     await client.end();
     console.log("dropped all data");

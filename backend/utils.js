@@ -27,6 +27,11 @@ function insert_data(tableName, columnNames, values, extras = "") {
     return pgp.helpers.insert(values, cs) + extras;
 }
 
+function update_data(tableName, columnNames, values, where_column = "",) {
+    const cs = new pgp.helpers.ColumnSet(columnNames, { table: tableName });
+    return pgp.helpers.update(values, cs) + ' WHERE v.' + where_column +' = t.' + where_column;
+}
+
 
 async function send_email(user, book) {
     var transporter = nodemailer.createTransport({
@@ -70,4 +75,5 @@ module.exports = {
     combine_books_with_authors,
     insert_data,
     send_email,
+    update_data,
 };

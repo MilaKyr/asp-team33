@@ -139,7 +139,7 @@ const insertAuthorModel = async (request, book_id) => {
 
     var insert_query = utils.insert_data("author", ["name", "surname"], values, " ON CONFLICT DO NOTHING RETURNING id");
     const db_authors = await getPool().query("WITH temp_table AS ( " + insert_query + ") SELECT id FROM temp_table UNION ALL \
-        SELECT id FROM (SELECT id, name||' '||surname as full_name FROM author) \
+        SELECT id FROM (SELECT id, name||','||surname as full_name FROM author) \
         WHERE \"full_name\" =ANY($1::text[])", [author_names]);
 
     values = [];
@@ -183,9 +183,8 @@ const updateBook = async (request, response) => {
         var query = utils.insert_data("author", ["name", "surname"], values,
             " ON CONFLICT (name, surname) DO UPDATE SET name = EXCLUDED.name, surname = EXCLUDED.surname RETURNING id");
         const res = await getPool().query(query);
-        const author_ids = values.map((index) => ({ book_id: book_id, author_id: res.rows[index].id }));
-
-        var query = utils.insert_data("bookauthor", ["book_id", "author_id"], author_ids, " ON CONFLICT DO NOTHING");
+        const author_ids = values.map((_, index) => ({ book_id: parseInt(book_id), author_id: res.rows[index].id }));
+        var query = utils.update_data("bookauthor", ["?book_id", "author_id"], author_ids, "book_id");
         await getPool().query(query);
         response.status(200).send();
     } catch (err) {

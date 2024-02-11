@@ -1,25 +1,18 @@
 import { Input, Icon, Text, Box, Heading, FlatList, HStack, VStack, Spacer, Image, Button } from 'native-base';
 import { StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 
-// TODO this will be changed with api call
-const item = {
-    id: 1,
-    title: "The Web Application Hacker's Handbook: Finding and Exploiting Security Flaws",
-    authors: ["Dafydd Stuttard", "Marcus Pinto"],
-    description: "The highly successful security book returns with a new edition, completely updatedWeb applications are the front door to most organizations, exposing them to attacks that may disclose personal information, execute fraudulent transactions, or compromise ordinary users. This practical book has been completely updated and revised to discuss the latest step-by-step techniques for attacking and defending the range of ever-evolving web applications. You'll explore the various new technologies employed in web applications that have appeared since the first edition and review the new attack techniques that have been developed, particularly in relation to the client side",
-    edition: "2nd",
-    icbn_10: "1118026470",
-    image: require('../assets/tim-alex-xG5VJW-7Bio-unsplash.jpg'),
-    courses: ["Computer Security"],
-    user: {
-        id: '1',
-        name: 'John',
-        surname: 'Doe',
-    },
-};
 
-const BookDetailPage = ({ navigation }) => {
+const API_URL = 'http://localhost:8000/api';
+
+const BookDetailPage = ({ navigation, route }) => {
+    const item = route.params && route.params.book ? route.params.book : {}
+    console.log({ navigation: route.params })
+
+
+
     return (
         <View style={styles.container}>
             <Box marginBottom={4}>
@@ -32,13 +25,13 @@ const BookDetailPage = ({ navigation }) => {
                         <Text fontSize="xs" _light={{
                             color: "violet.500"
                         }} fontWeight="500">
-                            by {item.authors.join(", ")}.
+                            by {item?.authors?.join(", ")}.
                         </Text>
                         <Text fontSize="xs" color="coolGray.800" alignSelf="flex-start">
                             Courses: {item.courses}
                         </Text>
                         <Text fontSize="xs" fontWeight="500">
-                            Uploaded By: {item.user.name} {item.user.surname}
+                            Uploaded By: {item.name} {item.surname}
                         </Text>
                     </VStack>
                     <HStack width='100%'>

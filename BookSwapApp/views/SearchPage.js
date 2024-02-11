@@ -28,7 +28,9 @@ const SearchPage = ({ navigation }) => {
                 <FlatList data={bookResults} renderItem={({
                     item
                 }) => <Pressable onPress={() => {
-                    navigation.navigate('BookDetail')
+                    navigation.navigate('BookDetail', {
+                        book: item
+                    })
                 }}>
                         <Box marginBottom={4}>
                             <HStack justifyContent="space-between">

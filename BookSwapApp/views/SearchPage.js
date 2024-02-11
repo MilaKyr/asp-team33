@@ -1,31 +1,25 @@
 import { Input, Icon, Text, Box, Heading, FlatList, HStack, VStack, Spacer, Image } from 'native-base';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import axios from 'axios';
+import { useState } from 'react';
 
-// TODO this will be changed with api call
-const bookResults = Array.from([1, 2, 3, 4, 5], (index) => {
-    return ({
-        id: index,
-        title: "The Web Application Hacker's Handbook: Finding and Exploiting Security Flaws",
-        authors: ["Dafydd Stuttard", "Marcus Pinto"],
-        description: "The highly successful security book returns with a new edition, completely updatedWeb applications are the front door to most organizations, exposing them to attacks that may disclose personal information, execute fraudulent transactions, or compromise ordinary users. This practical book has been completely updated and revised to discuss the latest step-by-step techniques for attacking and defending the range of ever-evolving web applications. You'll explore the various new technologies employed in web applications that have appeared since the first edition and review the new attack techniques that have been developed, particularly in relation to the client side",
-        edition: "2nd",
-        icbn_10: "1118026470",
-        image: require('../assets/tim-alex-xG5VJW-7Bio-unsplash.jpg'),
-        courses: ["Computer Security"],
-        user: {
-            id: '1',
-            name: 'John',
-            surname: 'Doe',
-        },
-    })
-})
+const API_URL = 'http://localhost:8000/api';
 
 const SearchPage = ({ navigation }) => {
+    const [bookResults, setBookResults] = useState([])
+    const searchBooks = (text) => {
+        console.log({text})
+        axios.get(API_URL + `/search?title=${text}`).then((res) => {
+            setBookResults(res.data)
+        }).catch(() => {})
+    }
     return (
         <View style={styles.container}>
             <View style={styles.subsets}>
-                <Input size="2xl" enterKeyHint='search' placeholder="Search for interested books" variant="rounded" width="100%" fontSize="14" InputLeftElement={<Icon ml="2" size="4" color="gray.400" as={<Ionicons name="search" />} />} />
+                <Input onChangeText={(text) => {
+                    searchBooks(text)
+                }} size="2xl" enterKeyHint='search' placeholder="Search for interested books" variant="rounded" width="100%" fontSize="14" InputLeftElement={<Icon ml="2" size="4" color="gray.400" as={<Ionicons name="search" />} />} />
             </View>
             <Box style={styles.subsets}>
                 <Heading fontSize="xl" p="4" pb="3">
@@ -49,7 +43,7 @@ const SearchPage = ({ navigation }) => {
                                         by {item.authors.join(", ")}.
                                     </Text>
                                     <Text fontSize="xs" color="coolGray.800" alignSelf="flex-start">
-                                        Courses: {item.courses}
+                                        Courses: {item.course}
                                     </Text>
                                 </VStack>
                             </HStack>

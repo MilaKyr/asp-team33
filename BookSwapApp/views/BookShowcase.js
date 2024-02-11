@@ -1,5 +1,11 @@
 import { StyleSheet, View, ScrollView } from 'react-native';
+import axios from 'axios';
 import BookShowcaseItem from '../components/BookShowcaseItem';
+import { useEffect, useState } from 'react';
+
+
+const API_URL = 'http://localhost:8000/api';
+
 
 // TODO this will be changed with api call
 const books = [
@@ -36,10 +42,31 @@ const books = [
 ];
 
 const BookShowcase = () => {
+    const [data, setData] = useState([]);
+
+    useEffect(() => {
+        fetchData();
+      }, []);
+    
+      const fetchData = async () => {
+        try {
+          const response = await axios.get(API_URL);
+
+          console.log('============?')
+          const res = response.data.map(x => x.image);
+          
+          console.log({ response: res  })
+          setData(response.data);
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
+      };
+
+
     return (
         <View style={styles.bookShowcase}>
             <ScrollView horizontal showsHorizontalScrollIndicator pagingEnable style={styles.scrollView}>
-                {books.map((item) => <BookShowcaseItem item={item} />)}
+                {data.map((item) => <BookShowcaseItem item={item} />)}
             </ScrollView>
         </View>
     );

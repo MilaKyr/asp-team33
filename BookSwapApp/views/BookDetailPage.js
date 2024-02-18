@@ -1,18 +1,16 @@
 import { Input, Icon, Text, Box, Heading, FlatList, HStack, VStack, Spacer, Image, Button } from 'native-base';
 import { StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { AuthContext } from '../util/context';
 
 
 const API_URL = 'http://localhost:8000/api';
 
 const BookDetailPage = ({ navigation, route }) => {
+    const { isSignedIn } = React.useContext(AuthContext);
     const item = route.params && route.params.book ? route.params.book : {}
-    console.log({ navigation: route.params })
-
-
-
     return (
         <View style={styles.container}>
             <Box marginBottom={4}>
@@ -40,7 +38,11 @@ const BookDetailPage = ({ navigation, route }) => {
                     </VStack>
                     <HStack width='100%'>
                         <Button size='lg' width='100%' colorScheme="primary" variant='solid' onPress={() => {
-                            navigation.navigate('SignUp')
+                            if (isSignedIn) {
+                                navigation.navigate('ScheduleSwap')
+                            } else {
+                                navigation.navigate('SignIn')
+                            }
                         }}>Schedule Swap</Button>
                     </HStack>
                 </VStack>

@@ -33,9 +33,7 @@ const Stack = createStackNavigator();
 
 function MyBooksStack() {
 
-  const { signIn, isSignedIn } = React.useContext(AuthContext);
-
-  console.log({isSignedIn})
+  const { isSignedIn } = React.useContext(AuthContext);
 
   return (
     <Stack.Navigator>
@@ -71,6 +69,8 @@ function MyBooksStack() {
 }
 
 function SearchStack() {
+  const { isSignedIn } = React.useContext(AuthContext);
+
   return (
     <Stack.Navigator>
       <Stack.Screen options={{
@@ -79,15 +79,20 @@ function SearchStack() {
       <Stack.Screen options={{
         headerTitle: 'Book Detail'
       }} name="BookDetail" component={BookDetailPage} />
-      <Stack.Screen options={{
-        headerShown: false
-      }} name="SignUp" component={SignUpPage} />
-      <Stack.Screen options={{
-        headerShown: false
-      }} name="SignIn" component={SignInPage} />
-      <Stack.Screen options={{
-        headerShown: false
-      }} name="ScheduleSwap" component={SwapSchedulePage} />
+      {isSignedIn ? (<>
+        <Stack.Screen options={{
+          headerShown: false
+        }} name="ScheduleSwap" component={SwapSchedulePage} />
+      </>) : (
+        <>
+          <Stack.Screen options={{
+            headerShown: false
+          }} name="SignUp" component={SignUpPage} />
+          <Stack.Screen options={{
+            headerShown: false
+          }} name="SignIn" component={SignInPage} />
+        </>
+      )}
     </Stack.Navigator>
   );
 }
@@ -149,7 +154,7 @@ export default function App() {
     },
     isSignedIn: state.userToken != null
   }
-  
+
   console.log(state)
 
   return (

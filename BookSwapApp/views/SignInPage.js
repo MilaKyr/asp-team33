@@ -59,7 +59,7 @@ function SignInForm({ onFormSubmit, isSubmitting }) {
             <FormControl.Label _text={{
                 bold: true
             }}>Email</FormControl.Label>
-            <Input size='xl' placeholder="user@example.com" onChangeText={value => setData({
+            <Input autoCapitalize='none' size='xl' placeholder="user@example.com" onChangeText={value => setData({
                 ...formData,
                 email: value
             })} />

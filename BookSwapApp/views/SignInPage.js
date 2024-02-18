@@ -1,8 +1,9 @@
 import axios from 'axios';
-import { Button, FormControl, HStack, Heading, Input, Stack, Text, VStack } from 'native-base';
+import { Button, FormControl, HStack, Heading, Input, VStack } from 'native-base';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AuthContext } from '../util/context';
 
 
 
@@ -13,10 +14,10 @@ const validateEmail = (email) => {
     // Regular expression for email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
-  };
+};
 
 
-function SignInForm({navigation, onFormSubmit}) {
+function SignInForm({ onFormSubmit, isSubmitting }) {
     const [formData, setData] = React.useState({});
     const [errors, setErrors] = React.useState({});
 
@@ -33,7 +34,7 @@ function SignInForm({navigation, onFormSubmit}) {
                 email: 'Email is not valid'
             });
             return false;
-        } else if (formData.password === undefined) {
+        } else if (formData.password === undefined || formData.password == '') {
             setErrors({
                 ...errors,
                 password: 'Password is required'
@@ -48,7 +49,6 @@ function SignInForm({navigation, onFormSubmit}) {
         console.log('validating')
         if (validate()) {
             onFormSubmit(formData)
-            // navigation.navigate('ScheduleSwap');
         } else {
             console.log('errors:  ', errors)
         }
@@ -63,7 +63,7 @@ function SignInForm({navigation, onFormSubmit}) {
                 ...formData,
                 email: value
             })} />
-            {'email' in errors ? <FormControl.ErrorMessage>Error</FormControl.ErrorMessage> : null}
+            {'email' in errors ? <FormControl.ErrorMessage>Please enter a valid email</FormControl.ErrorMessage> : null}
         </FormControl>
         <FormControl isRequired isInvalid={'password' in errors}>
             <FormControl.Label _text={{
@@ -73,39 +73,48 @@ function SignInForm({navigation, onFormSubmit}) {
                 ...formData,
                 password: value
             })} />
-            {'password' in errors ? <FormControl.ErrorMessage>Error</FormControl.ErrorMessage> : null}
+            {'password' in errors ? <FormControl.ErrorMessage>Password is required</FormControl.ErrorMessage> : null}
         </FormControl>
-        <Button size='lg' onPress={onSubmit} mt="5" colorScheme="cyan">
+        <Button isLoading={isSubmitting} size='lg' onPress={onSubmit} mt="5" colorScheme="cyan">
             Login
         </Button>
     </VStack>;
 }
 
-const SignInPage = ({ navigation, route }) => {
+const SignInPage = ({ navigation }) => {
 
-    console.log(route.params)
-    const onFormSubmit = ({email, password}) => {
+    const { signIn } = React.useContext(AuthContext);
+    const [isSubmitting, setSubmitting] = React.useState(false)
+
+
+    const onFormSubmit = ({ email, password }) => {
+        setSubmitting(true)
         axios.post(`${API_URL}/sign_in`, {
             email,
             password
         }).then(res => {
             if (res.data) {
                 AsyncStorage.setItem('userToken', String(res.data));
-                route.params?.signIn(String(res.data));
+                signIn(String(res.data));
+                setSubmitting(false)
             }
             console.log('resultssss===>', res.data)
         }).catch(err => {
             console.log('error===>', err)
         });
-
     }
 
     return (
         <View style={styles.container}>
-           <HStack justifyContent='center' mb={8}>
-            <Heading>Sign In</Heading>
-           </HStack>
-            <SignInForm onFormSubmit={onFormSubmit} navigation={navigation} />
+            <HStack justifyContent='center' mb={8}>
+                <Heading>Sign In</Heading>
+            </HStack>
+            <SignInForm isSubmitting={isSubmitting} onFormSubmit={onFormSubmit} navigation={navigation} />
+            <Button size="md" variant="ghost" onPress={() => {
+                navigation.navigate('SignUp')
+            }}>
+                Create an account
+            </Button>
         </View>
     );
 }

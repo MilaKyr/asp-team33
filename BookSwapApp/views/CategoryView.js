@@ -5,7 +5,7 @@ import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 const categories = ["Categories", "Categories", "Categories", "Categories", "Categories", "Categories"]
 
 const CategoryItem = ({ item, index }) => (
-    <Box key={index} alignItems="center">
+    <Box key={index + Math.random()} alignItems="center">
         <Pressable>
             {({
                 isHovered,
@@ -25,7 +25,7 @@ const CategoryItem = ({ item, index }) => (
                     <Text color="coolGray.800" mt="3" fontWeight="medium" >
                         {item}
                     </Text>
-                    <FontAwesome6 name='computer' size="24" />
+                    <FontAwesome6 name='computer' />
                 </Box>
             }}
         </Pressable>

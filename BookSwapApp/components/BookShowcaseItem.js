@@ -6,21 +6,15 @@ import { encode as btoa } from 'base-64'
 const BookShowcaseItem = ({ item }) => {
     const arrayBufferToBase64ImageString = buffer => {
         const base64String = btoa(String.fromCharCode(...new Uint8Array(buffer.data)));
-
-        console.log(base64String)
         return `data:image/jpeg;base64,${base64String}`;
     };
-
-    console.log(arrayBufferToBase64ImageString(item.image))
-
-
     return (
         <Box alignItems="center" height='100%'>
             <Box maxW="80" minHeight='90%' rounded="2xl" overflow="hidden" borderColor="coolGray.200" borderWidth="1" _light={{
                 backgroundColor: "gray.50"
             }}>
                 <Box height='50%'>
-                    <Image style={styles.imageCover} source={arrayBufferToBase64ImageString(item.image)} alt='image' />
+                    {/* <Image style={styles.imageCover} source={arrayBufferToBase64ImageString(item.image)} alt='image' /> */}
                 </Box>
                 <Stack p="4" space={2}>
                     <Stack space={2}>

@@ -18,6 +18,7 @@ import SignUpPage from './views/SignUpPage';
 import SignInPage from './views/SignInPage';
 import SwapSchedulePage from './views/SwapSchedulePage';
 import React from 'react';
+import { AuthContext } from './util/context';
 
 const config = {
   dependencies: {
@@ -25,7 +26,6 @@ const config = {
   }
 };
 
-export const AuthContext = React.createContext();
 
 const Tab = createBottomTabNavigator();
 
@@ -34,6 +34,8 @@ const Stack = createStackNavigator();
 function MyBooksStack() {
 
   const { signIn, isSignedIn } = React.useContext(AuthContext);
+
+  console.log({isSignedIn})
 
   return (
     <Stack.Navigator>
@@ -57,9 +59,7 @@ function MyBooksStack() {
           <>
             <Stack.Screen options={{
               headerShown: false
-            }} name="SignIn" component={SignInPage} initialParams={{
-              signIn
-            }} />
+            }} name="SignIn" component={SignInPage} />
             <Stack.Screen options={{
               headerShown: false
             }} name="SignUp" component={SignUpPage} />
@@ -149,6 +149,8 @@ export default function App() {
     },
     isSignedIn: state.userToken != null
   }
+  
+  console.log(state)
 
   return (
     <NativeBaseProvider config={config}>

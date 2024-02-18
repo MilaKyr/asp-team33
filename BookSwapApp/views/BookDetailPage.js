@@ -22,16 +22,20 @@ const BookDetailPage = ({ navigation, route }) => {
                         <Text color="coolGray.800" bold>
                             {item.title}
                         </Text>
+
                         <Text fontSize="xs" _light={{
                             color: "violet.500"
                         }} fontWeight="500">
                             by {item?.authors?.join(", ")}.
                         </Text>
                         <Text fontSize="xs" color="coolGray.800" alignSelf="flex-start">
-                            Courses: {item.courses}
+                            Courses: {item.course}
                         </Text>
                         <Text fontSize="xs" fontWeight="500">
                             Uploaded By: {item.name} {item.surname}
+                        </Text>
+                        <Text color="coolGray.800">
+                            {item.description}
                         </Text>
                     </VStack>
                     <HStack width='100%'>
@@ -52,7 +56,7 @@ const styles = StyleSheet.create({
     },
     imageCover: {
         width: '100%',
-        height: '70%'
+        height: '20%'
     }
 });
 

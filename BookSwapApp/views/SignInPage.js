@@ -1,23 +1,42 @@
+import axios from 'axios';
 import { Button, FormControl, HStack, Heading, Input, Stack, Text, VStack } from 'native-base';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
-function SignInForm({navigation}) {
+
+
+const API_URL = 'http://localhost:8000/api';
+
+const validateEmail = (email) => {
+    // Regular expression for email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+
+function SignInForm({navigation, onFormSubmit}) {
     const [formData, setData] = React.useState({});
     const [errors, setErrors] = React.useState({});
 
     const validate = () => {
-        if (formData.name === undefined) {
+        if (formData.email === undefined) {
             setErrors({
                 ...errors,
-                name: 'Name is required'
+                email: 'Email is required'
             });
             return false;
-        } else if (formData.name.length < 3) {
+        } else if (!validateEmail(formData.email)) {
             setErrors({
                 ...errors,
-                name: 'Name is too short'
+                email: 'Email is not valid'
+            });
+            return false;
+        } else if (formData.password === undefined) {
+            setErrors({
+                ...errors,
+                password: 'Password is required'
             });
             return false;
         }
@@ -26,8 +45,13 @@ function SignInForm({navigation}) {
     };
 
     const onSubmit = () => {
-        // validate() ? console.log('Submitted') : console.log('Validation Failed');
-        navigation.navigate('ScheduleSwap')
+        console.log('validating')
+        if (validate()) {
+            onFormSubmit(formData)
+            // navigation.navigate('ScheduleSwap');
+        } else {
+            console.log('errors:  ', errors)
+        }
     };
 
     return <VStack width="100%">
@@ -57,13 +81,31 @@ function SignInForm({navigation}) {
     </VStack>;
 }
 
-const SignInPage = ({ navigation }) => {
+const SignInPage = ({ navigation, route }) => {
+
+    console.log(route.params)
+    const onFormSubmit = ({email, password}) => {
+        axios.post(`${API_URL}/sign_in`, {
+            email,
+            password
+        }).then(res => {
+            if (res.data) {
+                AsyncStorage.setItem('userToken', String(res.data));
+                route.params?.signIn(String(res.data));
+            }
+            console.log('resultssss===>', res.data)
+        }).catch(err => {
+            console.log('error===>', err)
+        });
+
+    }
+
     return (
         <View style={styles.container}>
            <HStack justifyContent='center' mb={8}>
             <Heading>Sign In</Heading>
            </HStack>
-            <SignInForm navigation={navigation} />
+            <SignInForm onFormSubmit={onFormSubmit} navigation={navigation} />
         </View>
     );
 }

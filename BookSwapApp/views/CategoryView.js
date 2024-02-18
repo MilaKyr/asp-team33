@@ -22,7 +22,7 @@ const CategoryItem = ({ item, index }) => (
                     margin: 0,
                     flexDirection: 'row'
                 }} p="5" rounded="8" shadow={3} borderWidth="1" borderColor="coolGray.300">
-                    <Text color="coolGray.800" mt="3" fontWeight="medium" fontSize="md">
+                    <Text color="coolGray.800" mt="3" fontWeight="medium" >
                         {item}
                     </Text>
                     <FontAwesome6 name='computer' size="24" />

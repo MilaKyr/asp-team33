@@ -12,6 +12,7 @@ router.get('/', db.bookShowcase);
 router.get('/search', db.Search);
 router.get('/my_book/:id', db.MyBook);
 router.post('/add_book', db.addBook);
+router.get('/my_books', db.MyBooks);
 router.put('/update_book/:id', db.updateBook);
 router.post('/sign_in', db.SignIn);
 router.post('/sign_up', db.SignUp);

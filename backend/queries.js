@@ -101,6 +101,27 @@ const SignUp = async (request, response) => {
     }
 };
 
+const MyBooks = async (request, response) => {
+    if (!request.session.loggedin) return response.status(401).send();
+    try {
+        const user_id = request.session.username;
+        var statement = "SELECT user_books.book_id, book.title, book.description, book.edition, book.icbn_10, \
+        author.name||' '||author.surname AS author, bookimage.image, course.name AS course \
+        FROM (SELECT book_id, user_id FROM userbook WHERE user_id = $1) as user_books \
+        LEFT JOIN book ON book.id = user_books.book_id \
+        LEFT JOIN bookauthor ON book.id = bookauthor.book_id \
+        LEFT JOIN author ON author.id = bookauthor.author_id \
+        LEFT JOIN bookimage ON bookimage.book_id = book.id AND bookimage.user_id  = user_books.user_id \
+        LEFT JOIN bookcourse ON bookcourse.book_id = book.id \
+        LEFT JOIN course ON course.id = bookcourse.course_id";
+        const result = await getPool().query(statement, [user_id]);
+        response.status(200).json(result.rows);
+    } catch (err) {
+        console.error(err);
+        return response.status(404).send();
+    }
+};
+
 const MyBook = async (request, response) => {
     if (!request.session.loggedin) return response.status(401).send();
     try {
@@ -319,4 +340,5 @@ module.exports = {
     ScheduleSwap,
     addImage,
     UpdateSwap,
+    MyBooks,
 };

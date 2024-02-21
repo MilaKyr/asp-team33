@@ -13,7 +13,7 @@ config.postgres.user = 'main';
 config.postgres.host = process.env.DB_HOST || 'localhost';
 config.postgres.port = parseInt(process.env.DB_PORT) || 5432;
 config.postgres.password = process.env.DB_PASSWORD || "password";
-config.postgres.database = 'api';
+config.postgres.database = process.env.DB_DATABASE || 'api';
 
 // session settings
 config.session = {};

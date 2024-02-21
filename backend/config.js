@@ -1,4 +1,4 @@
-const configPkg = require('config');
+const configPkg = require('./node_modules/config');
 var dotenv = require('dotenv');
 dotenv.config();
 const server = configPkg.get('server');

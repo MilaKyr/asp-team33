@@ -1,9 +1,8 @@
 const crypto = require('crypto');
-const config = require('config');
-const key = config.get('crypto_key');
+const config = require('./config');
 
 ALGORITHM = "aes-256-gcm"; 
-KEY = key.toString('base64');
+KEY = config.cryptoKey.toString('base64');
 
 
 function encrypt(plaintext) {

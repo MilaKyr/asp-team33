@@ -8,11 +8,20 @@ const routes = require('./routes/main');
 const helmet = require('helmet');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./docs/swagger.json');
+const { getPool } = require('./postgresql');
+const pgSession = require('connect-pg-simple')(session);
 
 // set the app to parse nested objects
 app.use(express.urlencoded({extended: true})); 
 // set the app to use gzip compression
 app.use(compression());
+
+
+const postgreStore = new pgSession({
+  pool: getPool(),
+  createTableIfMissing: true,
+})
+
 
 // add cookie session params 
 app.use(session({
@@ -22,7 +31,8 @@ app.use(session({
   saveUninitialized: true,
   secret: config.session.secret,
   resave: false,
-  cookie: {maxAge: config.session.expiryDate}
+  cookie: {maxAge: config.session.expiryDate},
+  store: postgreStore,
 }));
 
 app.use(bodyParser.json());

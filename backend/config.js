@@ -5,7 +5,7 @@ const server = configPkg.get('server');
 
 var config = module.exports = {};
 
-config.port = parseInt(process.env.API_PORT) || server.port;
+config.port = process.env.PORT || process.env.API_PORT || server.port;
 
 // postgres database
 config.postgres = {};

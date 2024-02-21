@@ -1,4 +1,4 @@
-const configPkg = require('./node_modules/config');
+const configPkg = require('config');
 var dotenv = require('dotenv');
 dotenv.config();
 const server = configPkg.get('server');
@@ -9,7 +9,7 @@ config.port = parseInt(process.env.API_PORT) || server.port;
 
 // postgres database
 config.postgres = {};
-config.postgres.user = 'main';
+config.postgres.user = process.env.DB_USER || 'main';
 config.postgres.host = process.env.DB_HOST || 'localhost';
 config.postgres.port = parseInt(process.env.DB_PORT) || 5432;
 config.postgres.password = process.env.DB_PASSWORD || "password";

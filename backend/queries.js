@@ -330,6 +330,17 @@ const UpdateSwap = async (request, response) => {
     }
 }
 
+const Locations = async (request, response) => {
+    try {
+        var statement = "SELECT city, country FROM appuser GROUP BY city, country";
+        const results = await getPool().query(statement);
+        return response.status(200).json(results.rows);
+    } catch (err) {
+        console.error(err);
+        return response.status(500).send();
+    }
+}
+
 module.exports = {
     bookShowcase,
     Search,
@@ -345,4 +356,5 @@ module.exports = {
     addImage,
     UpdateSwap,
     MyBooks,
+    Locations,
 };

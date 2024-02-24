@@ -14,7 +14,8 @@
   "search_filters": [
     "course_id",
     "title",
-    "author"
+    "author",
+    "location"
   ],
   "email_transporter": {
     "host": "smtp.forwardemail.net",

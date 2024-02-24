@@ -1,29 +1,38 @@
 const express = require('express');
+var config = require('./config');
 const bodyParser = require('body-parser');
 const app = express();
-const port = 8000;
 const session = require('express-session');
 const compression = require('compression');
 const routes = require('./routes/main');
 const helmet = require('helmet');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./docs/swagger.json');
-const config = require('config');
-const server = config.get('server');
+const { getPool } = require('./postgresql');
+const pgSession = require('connect-pg-simple')(session);
 
 // set the app to parse nested objects
 app.use(express.urlencoded({extended: true})); 
 // set the app to use gzip compression
 app.use(compression());
 
+
+const postgreStore = new pgSession({
+  pool: getPool(),
+  createTableIfMissing: true,
+})
+
+
 // add cookie session params 
-const expiryDate = new Date(Date.now() + 60 * 60 * 1000) // 1 hour
-var secret = 'secret'; // Secrete for the cookie storage. Should be random in production code
 app.use(session({
-	secret: secret,
-	resave: false, // to avoid race conditions
-	saveUninitialized: false, //per docs, is useful for implementing login sessions
-  maxAge: expiryDate, // set max age of cookie to be 1 hour
+	store: new (require('connect-pg-simple')(session))({
+    // Insert connect-pg-simple options here
+  }),
+  saveUninitialized: true,
+  secret: config.session.secret,
+  resave: false,
+  cookie: {maxAge: config.session.expiryDate},
+  store: postgreStore,
 }));
 
 app.use(bodyParser.json());
@@ -37,6 +46,6 @@ app.use('/api/', routes);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.disable('x-powered-by');
 
-app.listen(server.port, server.host, () => {
-  console.log(`App running on port ${server.port}.`);
+app.listen(config.port, () => {
+  console.log(`App running on port ${config.port}.`);
 });

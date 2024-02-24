@@ -6,6 +6,7 @@ const AVAILABLE_FILTERS = config.get('search_filters');
 
 
 var fullBookSelect = "SELECT appuser.id AS user_id, appuser.name, appuser.surname, \
+appuser.city, appuser.country, \
 book.id AS book_id, book.title, book.description, book.edition, book.icbn_10, \
 author.name||' '||author.surname AS author, bookimage.image, course.name AS course";
 
@@ -48,6 +49,8 @@ const Search = async (request, response) => {
                 where_filter = " WHERE course.id = $1";
             } else if (filter_by == "title") {
                 where_filter = " WHERE LOWER(book.title) LIKE '%' || $1 || '%'";
+            } else if (filter_by == "location"){
+                where_filter = " WHERE LOWER(appuser.city) LIKE '%' || $1 || '%' OR LOWER(appuser.country) LIKE '%' || $1 || '%'";
             } else {
                 where_filter = " WHERE LOWER(author.name) LIKE '%' || $1 || '%' OR LOWER(author.surname) LIKE '%' || $1 || '%'";
             }
@@ -87,10 +90,11 @@ const SignIn = async (request, response) => {
 
 const SignUp = async (request, response) => {
     try {
-        var { email, password, name, surname } = request.body;
+        var { email, password, name, surname, city, country } = request.body;
         var password_hash = crypto.encrypt(password);
-        var statement = "INSERT INTO appuser (email, password_hash, name, surname) VALUES ($1, $2, $3, $4) RETURNING id";
-        const user = await getPool().query(statement, [email, password_hash, name, surname]);
+        var statement = "INSERT INTO appuser (email, password_hash, name, surname, city, country) \
+                        VALUES ($1, $2, $3, $4, $5, $6) RETURNING id";
+        const user = await getPool().query(statement, [email, password_hash, name, surname, city, country]);
         var user_id = user.rows[0].id;
         request.session.loggedin = true;
         request.session.username = user_id;
@@ -98,6 +102,27 @@ const SignUp = async (request, response) => {
     } catch (err) {
         console.error(err);
         return response.status(500).send();
+    }
+};
+
+const MyBooks = async (request, response) => {
+    if (!request.session.loggedin) return response.status(401).send();
+    try {
+        const user_id = request.session.username;
+        var statement = "SELECT user_books.book_id, book.title, book.description, book.edition, book.icbn_10, \
+        author.name||' '||author.surname AS author, bookimage.image, course.name AS course \
+        FROM (SELECT book_id, user_id FROM userbook WHERE user_id = $1) as user_books \
+        LEFT JOIN book ON book.id = user_books.book_id \
+        LEFT JOIN bookauthor ON book.id = bookauthor.book_id \
+        LEFT JOIN author ON author.id = bookauthor.author_id \
+        LEFT JOIN bookimage ON bookimage.book_id = book.id AND bookimage.user_id  = user_books.user_id \
+        LEFT JOIN bookcourse ON bookcourse.book_id = book.id \
+        LEFT JOIN course ON course.id = bookcourse.course_id";
+        const result = await getPool().query(statement, [user_id]);
+        response.status(200).json(result.rows);
+    } catch (err) {
+        console.error(err);
+        return response.status(404).send();
     }
 };
 
@@ -305,6 +330,17 @@ const UpdateSwap = async (request, response) => {
     }
 }
 
+const Locations = async (request, response) => {
+    try {
+        var statement = "SELECT city, country FROM appuser GROUP BY city, country";
+        const results = await getPool().query(statement);
+        return response.status(200).json(results.rows);
+    } catch (err) {
+        console.error(err);
+        return response.status(500).send();
+    }
+}
+
 module.exports = {
     bookShowcase,
     Search,
@@ -319,4 +355,6 @@ module.exports = {
     ScheduleSwap,
     addImage,
     UpdateSwap,
+    MyBooks,
+    Locations,
 };

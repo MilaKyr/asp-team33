@@ -1,16 +1,15 @@
 const { Pool } = require('pg');
-const config = require('config');
-const database = config.get('database');
+const config = require('./config');
 
 let mainPool = null;
 
 function createPool(){
   const pool = new Pool({
-    user: database.user,
-    host: database.host,
-    database: database.database,
-    password: database.password,
-    port: database.port,
+    user: config.postgres.user,
+    host: config.postgres.host,
+    database: config.postgres.database,
+    password: config.postgres.password,
+    port: config.postgres.port,
   });
   return pool;
 }

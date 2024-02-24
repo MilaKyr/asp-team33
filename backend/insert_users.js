@@ -84,9 +84,12 @@ async function insert_users() {
     var values = [];
     for (user of parsedJSON.users) {
         var password_hash = crypto.encrypt(user.password);
-        values.push({ name: user.name, surname: user.surname, email: user.email, password_hash: password_hash })
+        values.push({ name: user.name, surname: user.surname, 
+            email: user.email, password_hash: password_hash,
+            city: user.city, country: user.country })
     }
-    var query = utils.insert_data("appuser", ["name", "surname", "email", "password_hash"], values, " RETURNING id");
+    var query = utils.insert_data("appuser", ["name", "surname", "email", "password_hash", "city", "country"]
+    , values, " RETURNING id");
     const res = await getPool().query(query);
     const userIds = new Map();
     values.map((key, index) => (userIds.set(key.email, res.rows[index].id)));

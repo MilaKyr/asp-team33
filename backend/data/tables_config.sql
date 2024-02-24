@@ -6,7 +6,9 @@ CREATE TABLE appuser(
     name varchar(100) NOT NULL,
     surname varchar(150),
     email varchar(100) NOT NULL UNIQUE,
-    password_hash varchar(256) NOT NULL UNIQUE
+    password_hash varchar(256) NOT NULL UNIQUE,
+    city varchar(256) NOT NULL,
+    country varchar(256) NOT NULL
 );
 
 

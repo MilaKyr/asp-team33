@@ -176,61 +176,81 @@
             "name": "Marisa",
             "surname": "Bird",
             "email": "marisa@bird.com",
-            "password": "marisa"
+            "password": "marisa",
+            "city": "London",
+            "country": "UK"
         },
         {
             "name": "Brooklyn",
             "surname": "Estes",
             "email": "brooklyn@estes.com",
-            "password": "brooklyn"
+            "password": "brooklyn",
+            "city": "Berlin",
+            "country": "Germany"
         },
         {
             "name": "Lance",
             "surname": "Hampton",
             "email": "lance@hampton.com",
-            "password": "lance"
+            "password": "lance",
+            "city": "London",
+            "country": "UK"
         },
         {
             "name": "kieran",
             "surname": "reilly",
             "email": "kieran@reilly.com",
-            "password": "kieran"
+            "password": "kieran",
+            "city": "Milan",
+            "country": "Italy"
         },
         {
             "name": "Brycen",
             "surname": "Jacobson",
             "email": "brycen@jacobson.com",
-            "password": "brycen"
+            "password": "brycen",
+            "city": "London",
+            "country": "UK"
         },
         {
             "name": "Cindy",
             "surname": "Carroll",
             "email": "cindy@carroll.com",
-            "password": "cindy"
+            "password": "cindy",
+            "city": "Milan",
+            "country": "Italy"
         },
         {
             "name": "Dana",
             "surname": "Chambers",
             "email": "dana@chambers.com",
-            "password": "dana"
+            "password": "dana",
+            "city": "London",
+            "country": "UK"
         },
         {
             "name": "Ramiro",
             "surname": "Rios",
             "email": "ramiro@rios.com",
-            "password": "ramiro"
+            "password": "ramiro",
+            "city": "Berlin",
+            "country": "Germany"
         },
         {
             "name": "Magdalena",
             "surname": "Compton",
             "email": "magdalena@compton.com",
-            "password": "magdalena"
+            "password": "magdalena",
+            "city": "Barcelona",
+            "country": "Spain"
         },
         {
             "name": "Emmanuel",
             "surname": "Webb",
             "email": "emmanuel@webb.com",
-            "password": "emmanuel"
+            "password": "emmanuel",
+            "city": "Barcelona",
+            "country": "Spain"
         }
     ],
     "requests": [

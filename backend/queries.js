@@ -6,6 +6,7 @@ const AVAILABLE_FILTERS = config.get('search_filters');
 
 
 var fullBookSelect = "SELECT appuser.id AS user_id, appuser.name, appuser.surname, \
+appuser.city, appuser.country, \
 book.id AS book_id, book.title, book.description, book.edition, book.icbn_10, \
 author.name||' '||author.surname AS author, bookimage.image, course.name AS course";
 
@@ -48,6 +49,8 @@ const Search = async (request, response) => {
                 where_filter = " WHERE course.id = $1";
             } else if (filter_by == "title") {
                 where_filter = " WHERE LOWER(book.title) LIKE '%' || $1 || '%'";
+            } else if (filter_by == "location"){
+                where_filter = " WHERE LOWER(appuser.city) LIKE '%' || $1 || '%' OR LOWER(appuser.country) LIKE '%' || $1 || '%'";
             } else {
                 where_filter = " WHERE LOWER(author.name) LIKE '%' || $1 || '%' OR LOWER(author.surname) LIKE '%' || $1 || '%'";
             }
@@ -87,10 +90,11 @@ const SignIn = async (request, response) => {
 
 const SignUp = async (request, response) => {
     try {
-        var { email, password, name, surname } = request.body;
+        var { email, password, name, surname, city, country } = request.body;
         var password_hash = crypto.encrypt(password);
-        var statement = "INSERT INTO appuser (email, password_hash, name, surname) VALUES ($1, $2, $3, $4) RETURNING id";
-        const user = await getPool().query(statement, [email, password_hash, name, surname]);
+        var statement = "INSERT INTO appuser (email, password_hash, name, surname, city, country) \
+                        VALUES ($1, $2, $3, $4, $5, $6) RETURNING id";
+        const user = await getPool().query(statement, [email, password_hash, name, surname, city, country]);
         var user_id = user.rows[0].id;
         request.session.loggedin = true;
         request.session.username = user_id;

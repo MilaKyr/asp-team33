@@ -287,8 +287,24 @@ const addImage = async (request, response) => {
         const statement = 'INSERT INTO bookimage (user_id, book_id, image) VALUES ($1, $2, $3 )';
         const book_id = parseInt(request.params.id);
         const user_id = request.session.username;
-        await getPool().query(statement, [user_id, book_id, request.file.buffer]);
+        // TODO resize
+        await getPool().query(statement, [user_id, book_id, request.file.buffer.toString('base64')]);
         return response.status(201).send();
+    } catch (err) {
+        console.error(err);
+        return response.status(404).send();
+    }
+}
+
+const getImage = async (request, response) => {
+    try {
+        const statement = 'SELECT image FROM bookimage WHERE book_id = $1 AND user_id  = $2';
+        const book_id = parseInt(request.query.book_id);
+        const user_id = parseInt(request.query.user_id);
+        const res = await getPool().query(statement, [book_id, user_id]);
+        var encodedBuffer = res.rows[0].image;
+        response.status(200).json(encodedBuffer);
+        return ;
     } catch (err) {
         console.error(err);
         return response.status(404).send();
@@ -381,4 +397,5 @@ module.exports = {
     Locations,
     Courses,
     BookTypes,
+    getImage,
 };

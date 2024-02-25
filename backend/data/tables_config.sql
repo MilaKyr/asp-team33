@@ -74,7 +74,7 @@ CREATE TABLE bookimage (
     id SERIAL PRIMARY KEY,
     book_id integer NOT NULL,
     user_id integer,
-    image bytea NOT NULL,
+    image text NOT NULL,
     FOREIGN KEY(user_id) REFERENCES appuser(id) ON DELETE CASCADE,
     FOREIGN KEY(book_id) REFERENCES book(id) ON DELETE CASCADE,
     UNIQUE(book_id, user_id)

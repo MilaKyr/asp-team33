@@ -25,7 +25,7 @@ router.put('/update_swap/:id', db.UpdateSwap);
 router.delete('/my_swaps/:id', db.DeleteSwap);
 router.delete('/my_book/:id', db.DeleteBook);
 router.post('/add_image/:id', upload.single('image'), db.addImage);
-
+router.get('/image', db.getImage);
 
 
 module.exports = router;

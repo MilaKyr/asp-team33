@@ -1,7 +1,10 @@
 import axios from 'axios';
-import { Button, CheckIcon, FormControl, Input, ScrollView, Select, Stack, VStack, useToast } from 'native-base';
+import { Button, CheckIcon, FormControl, Image, Input, Pressable, ScrollView, Select, Stack, Text, VStack, useToast } from 'native-base';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
+import { AntDesign } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+
 import { API_URL } from '../constants/api';
 
 const transformAuthors = (authors = '') => {
@@ -26,6 +29,9 @@ function BookUploadForm() {
     const [courses, setCourses] = React.useState([]);
     const [bookTypes, setBookTypes] = React.useState([]);
     const [errors, setErrors] = React.useState({});
+    const [stages, setStages] = React.useState(1);
+    const [book, setBook] = React.useState(null);
+    const [image, setImage] = React.useState(null);
     const toast = useToast();
 
 
@@ -47,6 +53,45 @@ function BookUploadForm() {
         console.log('vludate', valid)
         return valid;
     };
+
+    const onImageUpload = async () => {
+        try {
+            let filename = image.split('/').pop();
+            let match = /\.(\w+)$/.exec(filename);
+            let type = match ? `image/${match[1]}` : `image`;
+
+            let formData = new FormData();
+            formData.append('image', { uri: image, name: filename, type });
+
+            const url = `${API_URL}/add_image/${book}`
+            const response = await axios.post(url, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            console.log('Uploaded the book image', response.data)
+            toast.show({
+                title: "Image uploaded successfully",
+                placement: "bottom"
+            })
+            setBook(null)
+            setStages(1)
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    }
+
+    const checkForCameraRollPermission = async () => {
+        const { status } = await ImagePicker.getMediaLibraryPermissionsAsync();
+        console.log('status', status)
+        if (status !== 'granted' && status !== 'undetermined') {
+            alert("Please grant camera roll permissions inside your system's settings");
+        } else {
+            console.log('Media Permissions are granted')
+        }
+    }
+
+    React.useEffect(() => {
+        checkForCameraRollPermission()
+    }, []);
 
 
     const onSubmit = async () => {
@@ -71,10 +116,13 @@ function BookUploadForm() {
                 ...dataToSend
             });
             console.log('Uploaded the book', response.data)
+            setBook(response.data)
+            setStages(2)
             toast.show({
                 title: "Book uploaded successfully",
                 placement: "bottom"
             })
+            setData({})
         } catch (error) {
             console.error('Error fetching data:', error);
         }
@@ -105,6 +153,42 @@ function BookUploadForm() {
         getCourses();
         getBookTypes();
     }, [])
+
+
+    const addImage = async () => {
+        let _image = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 1,
+            selectionLimit: 0
+        });
+        if (!_image.cancelled) {
+            const { assets } = _image;
+            const asset = assets[0] || {}
+            setImage(asset.uri);
+        }
+    }
+
+    if (stages === 2 && book !== null) {
+        console.log({ image, book })
+        return (
+            <VStack width='100%' height='100%' justifyContent='center' alignItems='center'>
+                {
+                    image && <Image alt='dynamic image uploaded for book' source={{ uri: image }} style={{ width: '80%', height: 400 }} />
+                }
+                <Pressable onPress={addImage}>
+                    <VStack width='100%' justifyContent='center' alignItems='center'>
+                        <AntDesign name="camera" size={40} color="black" />
+                        <Text>{image ? 'Edit' : 'Upload'} Image</Text>
+                    </VStack>
+                </Pressable>
+                {image && <Button size='lg' onPress={onImageUpload} mt="5" colorScheme="cyan">
+                    Upload Book Image
+                </Button>}
+            </VStack>
+        )
+    }
 
     return <ScrollView>
         <VStack width="100%">

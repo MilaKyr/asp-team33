@@ -341,6 +341,28 @@ const Locations = async (request, response) => {
     }
 }
 
+const Courses = async (request, response) => {
+    try {
+        var statement = "SELECT DISTINCT id, name FROM course";
+        const results = await getPool().query(statement);
+        return response.status(200).json(results.rows);
+    } catch (err) {
+        console.error(err);
+        return response.status(500).send();
+    }
+}
+
+const BookTypes = async (request, response) => {
+    try {
+        var statement = "SELECT DISTINCT id, name FROM booktype";
+        const results = await getPool().query(statement);
+        return response.status(200).json(results.rows);
+    } catch (err) {
+        console.error(err);
+        return response.status(500).send();
+    }
+}
+
 module.exports = {
     bookShowcase,
     Search,
@@ -357,4 +379,6 @@ module.exports = {
     UpdateSwap,
     MyBooks,
     Locations,
+    Courses,
+    BookTypes,
 };

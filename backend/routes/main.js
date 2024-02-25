@@ -10,6 +10,8 @@ router.get('/health_check', (request, response) => {
 });
 router.get('/', db.bookShowcase);
 router.get('/search', db.Search);
+router.get('/courses', db.Courses);
+router.get('/book_types', db.BookTypes);
 router.get('/locations', db.Locations);
 router.get('/my_book/:id', db.MyBook);
 router.post('/add_book', db.addBook);

@@ -18,6 +18,8 @@ const MyBooksPage = ({ navigation }) => {
             const url = `${API_URL}/my_books`
             console.log('Fecthing books:');
             const response = await axios.get(url);
+
+            console.log(response.data)
             setBooks(response.data);
             setIsLoading(false)
         } catch (error) {
@@ -86,7 +88,9 @@ const MyBooksPage = ({ navigation }) => {
                                             Course: {item.course}
                                         </Text>
                                         <Button onPress={() => {
-                                            navigation.navigate('SwapOffer')
+                                            navigation.navigate('SwapOffer', {
+                                                book: item
+                                            })
                                         }}>View Offers for this book</Button>
                                         <HStack width='100%'>
                                             <Button width='50%' variant='outline' onPress={() => console.log("hello world")}>Update</Button>

@@ -3,10 +3,10 @@ import BookShowcase from './BookShowcase';
 import CategoryView from './CategoryView';
 
 
-const HomePage = () => {
+const HomePage = ({ navigation }) => {
   return (
     <View style={styles.container}>
-      <BookShowcase />
+      <BookShowcase navigation={navigation} />
       <CategoryView />
     </View>
   );

@@ -6,7 +6,7 @@ import { API_URL } from '../constants/api';
 
 
 
-const BookShowcase = () => {
+const BookShowcase = ({ navigation }) => {
     const [data, setData] = useState([]);
 
     useEffect(() => {
@@ -31,7 +31,7 @@ const BookShowcase = () => {
     return (
         <View style={styles.bookShowcase}>
             <ScrollView horizontal showsHorizontalScrollIndicator pagingEnable style={styles.scrollView}>
-                {data.map((item) => <BookShowcaseItem item={item} />)}
+                {data.map((item) => <BookShowcaseItem navigation={navigation} item={item} />)}
             </ScrollView>
         </View>
     );

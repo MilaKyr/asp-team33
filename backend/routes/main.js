@@ -21,6 +21,7 @@ router.put('/update_book/:id', db.updateBook);
 router.post('/sign_in', db.SignIn);
 router.post('/sign_up', db.SignUp);
 router.get('/my_swaps', db.Swaps);
+router.get('/sent_swaps', db.sentSwaps);
 router.post('/schedule_swap', db.ScheduleSwap);
 router.put('/update_swap/:id', db.UpdateSwap);
 router.delete('/my_swaps/:id', db.DeleteSwap);

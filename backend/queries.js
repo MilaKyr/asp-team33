@@ -387,6 +387,22 @@ const RequestStatuses = async (request, response) => {
     }
 }
 
+const sentSwaps = async (request, response) => {
+    if (!request.session.loggedin) return response.status(401).send();
+    try {
+        const user_id = request.session.username;
+        const statement = "SELECT request.*, status.name as status_name FROM request \
+        LEFT JOIN status ON status.id = request.status_id \
+        WHERE sender_user_id = $1";
+        const results = await getPool().query(statement, [user_id]);
+        return response.status(200).json(results.rows);
+    } catch (err) {
+        console.error(err);
+        return response.status(500).send();
+    }
+}
+
+
 module.exports = {
     bookShowcase,
     Search,
@@ -407,4 +423,5 @@ module.exports = {
     BookTypes,
     getImage,
     RequestStatuses,
+    sentSwaps,
 };

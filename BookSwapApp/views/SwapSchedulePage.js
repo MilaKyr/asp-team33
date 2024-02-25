@@ -9,24 +9,6 @@ function SwapScheduleForm({ navigation }) {
     const [formData, setData] = React.useState({});
     const [errors, setErrors] = React.useState({});
 
-    // const validate = () => {
-    //     if (formData.name === undefined) {
-    //         setErrors({
-    //             ...errors,
-    //             name: 'Name is required'
-    //         });
-    //         return false;
-    //     } else if (formData.name.length < 3) {
-    //         setErrors({
-    //             ...errors,
-    //             name: 'Name is too short'
-    //         });
-    //         return false;
-    //     }
-
-    //     return true;
-    // };
-
     const onSubmit = () => {
         navigation.navigate('SignIn')
     };

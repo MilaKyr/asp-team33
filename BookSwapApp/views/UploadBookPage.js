@@ -1,4 +1,4 @@
-import { Button, FormControl, Input, Stack, VStack } from 'native-base';
+import { Button, CheckIcon, FormControl, Input, Select, Stack, VStack } from 'native-base';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -40,6 +40,16 @@ function BookUploadForm() {
             })} />
             {'title' in errors ? <FormControl.ErrorMessage>Error</FormControl.ErrorMessage> : null}
         </FormControl>
+        <FormControl isRequired isInvalid={'description' in errors}>
+            <FormControl.Label _text={{
+                bold: true
+            }}>Description</FormControl.Label>
+            <Input size='xl' placeholder="Book details" onChangeText={value => setData({
+                ...formData,
+                description: value
+            })} />
+            {'description' in errors ? <FormControl.ErrorMessage>Error</FormControl.ErrorMessage> : null}
+        </FormControl>
         <FormControl isRequired isInvalid={'authors' in errors}>
             <FormControl.Label _text={{
                 bold: true
@@ -60,7 +70,25 @@ function BookUploadForm() {
             })} />
             {'year' in errors ? <FormControl.ErrorMessage>Error</FormControl.ErrorMessage> : null}
         </FormControl>
-        <FormControl isRequired isInvalid={'icbn_10' in errors}>
+
+        <FormControl isRequired isInvalid={'bookType' in errors}>
+            <FormControl.Label _text={{
+                bold: true
+            }}>Upload type</FormControl.Label>
+            <Select selectedValue={formData.bookType} minWidth="200" accessibilityLabel="Choose Upload Type" placeholder="Choose Upload type" _selectedItem={{
+                bg: "teal.600",
+                endIcon: <CheckIcon size="5" />
+            }} mt={1} onValueChange={itemValue => {
+                setData({
+                    ...formData,
+                    bookType: itemValue
+                })
+            }}>
+                <Select.Item label="Book" value="1" />
+            </Select>
+            {'bookType' in errors ? <FormControl.ErrorMessage>Error</FormControl.ErrorMessage> : null}
+        </FormControl>
+        <FormControl>
             <FormControl.Label _text={{
                 bold: true
             }}>ICBN</FormControl.Label>
@@ -68,17 +96,15 @@ function BookUploadForm() {
                 ...formData,
                 icbn_10: value
             })} />
-            {'icbn_10' in errors ? <FormControl.ErrorMessage>Error</FormControl.ErrorMessage> : null}
         </FormControl>
-        <FormControl isRequired isInvalid={'bookType' in errors}>
+        <FormControl isInvalid={'edition' in errors}>
             <FormControl.Label _text={{
                 bold: true
-            }}>ICBN</FormControl.Label>
-            <Input size='xl' placeholder="Book Type" onChangeText={value => setData({
+            }}>Book Edition</FormControl.Label>
+            <Input size='xl' placeholder="Edition (optional)" onChangeText={value => setData({
                 ...formData,
-                bookType: value
+                edition: value
             })} />
-            {'bookType' in errors ? <FormControl.ErrorMessage>Error</FormControl.ErrorMessage> : null}
         </FormControl>
         <Button size='lg' onPress={onSubmit} mt="5" colorScheme="cyan">
             Upload Book

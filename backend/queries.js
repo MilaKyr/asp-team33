@@ -9,9 +9,9 @@ const AVAILABLE_FILTERS = config.get('search_filters');
 var fullBookSelect = "SELECT appuser.id AS user_id, appuser.name, appuser.surname, \
 appuser.city, appuser.country, \
 book.id AS book_id, book.title, book.description, book.edition, book.icbn_10, \
-author.name||' '||author.surname AS author, course.name AS course";
+author.name||' '||author.surname AS author, course.name AS course ";
 
-var fullBookJoins = "LEFT JOIN userbook ON userbook.book_id = book.id \
+var fullBookJoins = " LEFT JOIN userbook ON userbook.book_id = book.id \
 LEFT JOIN appuser ON appuser.id = userbook.user_id \
 LEFT JOIN bookauthor ON book.id = bookauthor.book_id \
 LEFT JOIN author ON author.id = bookauthor.author_id \

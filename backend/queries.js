@@ -376,6 +376,17 @@ const BookTypes = async (request, response) => {
     }
 }
 
+const RequestStatuses = async (request, response) => {
+    try {
+        var statement = "SELECT DISTINCT id, name FROM status";
+        const results = await getPool().query(statement);
+        return response.status(200).json(results.rows);
+    } catch (err) {
+        console.error(err);
+        return response.status(500).send();
+    }
+}
+
 module.exports = {
     bookShowcase,
     Search,
@@ -395,4 +406,5 @@ module.exports = {
     Courses,
     BookTypes,
     getImage,
+    RequestStatuses,
 };

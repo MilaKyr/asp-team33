@@ -2,6 +2,7 @@ const crypto = require('./crypto');
 const utils = require("./utils");
 const { getPool } = require('./postgresql');
 const config = require('config');
+const sharp = require('sharp');
 const AVAILABLE_FILTERS = config.get('search_filters');
 
 
@@ -48,7 +49,7 @@ const Search = async (request, response) => {
                 where_filter = " WHERE course.id = $1";
             } else if (filter_by == "title") {
                 where_filter = " WHERE LOWER(book.title) LIKE '%' || $1 || '%'";
-            } else if (filter_by == "location"){
+            } else if (filter_by == "location") {
                 where_filter = " WHERE LOWER(appuser.city) LIKE '%' || $1 || '%' OR LOWER(appuser.country) LIKE '%' || $1 || '%'";
             } else {
                 where_filter = " WHERE LOWER(author.name) LIKE '%' || $1 || '%' OR LOWER(author.surname) LIKE '%' || $1 || '%'";
@@ -284,8 +285,11 @@ const addImage = async (request, response) => {
         const statement = 'INSERT INTO bookimage (user_id, book_id, image) VALUES ($1, $2, $3 )';
         const book_id = parseInt(request.params.id);
         const user_id = request.session.username;
-        // TODO resize
-        await getPool().query(statement, [user_id, book_id, request.file.buffer.toString('base64')]);
+        const resizedBuffer = await sharp(request.file.buffer)
+            .resize(config.imageResize.height, config.imageResize.width, { fit: config.imageResize.fit })
+            .toBuffer()
+            .then(function (outputBuffer) { return outputBuffer.toString('base64') });
+        await getPool().query(statement, [user_id, book_id, resizedBuffer]);
         return response.status(201).send();
     } catch (err) {
         console.error(err);
@@ -300,8 +304,7 @@ const getImage = async (request, response) => {
         const user_id = parseInt(request.query.user_id);
         const res = await getPool().query(statement, [book_id, user_id]);
         var encodedBuffer = res.rows[0].image;
-        response.status(200).json(encodedBuffer);
-        return ;
+        return response.status(200).json(encodedBuffer);
     } catch (err) {
         console.error(err);
         return response.status(404).send();

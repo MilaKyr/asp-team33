@@ -27,8 +27,8 @@ receiver.name as receiver_name, receiver.surname as receiver_surname,  \
 receiver.city as receiver_city,  receiver.country as receiver_country \
 FROM request \
 LEFT JOIN status ON status.id = request.status_id \
-LEFT JOIN appuser as sender ON appuser.id = request.sender_user_id \
-LEFT JOIN appuser as receiver ON appuser.id = request.receiver_user_id "
+LEFT JOIN appuser as sender ON sender.id = request.sender_user_id \
+LEFT JOIN appuser as receiver ON receiver.id = request.receiver_user_id "
 
 const bookShowcase = async (request, response) => {
     try {
@@ -121,14 +121,9 @@ const MyBooks = async (request, response) => {
     if (!request.session.loggedin) return response.status(401).send();
     try {
         const user_id = request.session.username;
-        var statement = "SELECT user_books.book_id, book.title, book.description, book.edition, book.icbn_10, \
-        author.name||' '||author.surname AS author, course.name AS course \
-        FROM (SELECT book_id, user_id FROM userbook WHERE user_id = $1) as user_books \
-        LEFT JOIN book ON book.id = user_books.book_id \
-        LEFT JOIN bookauthor ON book.id = bookauthor.book_id \
-        LEFT JOIN author ON author.id = bookauthor.author_id \
-        LEFT JOIN bookcourse ON bookcourse.book_id = book.id \
-        LEFT JOIN course ON course.id = bookcourse.course_id";
+        var statement = fullBookSelect + 
+        " FROM (SELECT book_id, user_id FROM userbook WHERE user_id = $1) as user_books \
+        LEFT JOIN book ON book.id = user_books.book_id " + fullBookJoins;
         const result = await getPool().query(statement, [user_id]);
         response.status(200).json(result.rows);
     } catch (err) {
@@ -143,7 +138,7 @@ const MyBook = async (request, response) => {
         var statement = fullBookSelect + " FROM (SELECT * FROM book WHERE id = $1) AS book " + fullBookJoins;
         const book_id = request.params.id;
         const user_id = request.session.username;
-        const result = await getPool().query(statement, [book_id, user_id]);
+        const result = await getPool().query(statement, [book_id]);
         response.status(200).json(result.rows[0]);
     } catch (err) {
         console.error(err);

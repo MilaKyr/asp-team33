@@ -1,6 +1,6 @@
-import { Box, Button, FlatList, Flex, HStack, Heading, Image, Pressable, Spinner, Text, VStack, useToast } from 'native-base';
+import { Box, Button, FlatList, Flex, HStack, Heading, Image, Pressable, ScrollView, Spinner, Text, VStack, useToast } from 'native-base';
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { RefreshControl, StyleSheet, View } from 'react-native';
 import { API_URL } from '../constants/api';
 import axios from 'axios';
 
@@ -43,8 +43,13 @@ const MyBooksPage = ({ navigation }) => {
     };
 
 
+
     return (
-        <View style={styles.container}>
+        <ScrollView refreshControl={
+            <RefreshControl refreshing={isLoading} onRefresh={() => {
+                fetchMyBooks()
+            }} />
+        } style={styles.container}>
             <Flex direction='row'>
                 <Button width='50%' size='lg' variant='outline' onPress={() => {
                     navigation.navigate('SwapRequest')
@@ -94,7 +99,7 @@ const MyBooksPage = ({ navigation }) => {
                 )}
 
             </Box >
-        </View >
+        </ScrollView >
     );
 }
 

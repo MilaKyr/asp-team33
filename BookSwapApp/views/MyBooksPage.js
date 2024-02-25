@@ -1,26 +1,26 @@
 import { Box, Button, FlatList, Flex, HStack, Heading, Image, Pressable, Text, VStack } from 'native-base';
+import React from 'react';
 import { StyleSheet, View } from 'react-native';
-
-
-const myBooks = Array.from([1, 2], (index) => {
-    return ({
-        id: index,
-        title: "The Web Application Hacker's Handbook: Finding and Exploiting Security Flaws",
-        authors: ["Dafydd Stuttard", "Marcus Pinto"],
-        description: "The highly successful security book returns with a new edition, completely updatedWeb applications are the front door to most organizations, exposing them to attacks that may disclose personal information, execute fraudulent transactions, or compromise ordinary users. This practical book has been completely updated and revised to discuss the latest step-by-step techniques for attacking and defending the range of ever-evolving web applications. You'll explore the various new technologies employed in web applications that have appeared since the first edition and review the new attack techniques that have been developed, particularly in relation to the client side",
-        edition: "2nd",
-        icbn_10: "1118026470",
-        image: require('../assets/tim-alex-xG5VJW-7Bio-unsplash.jpg'),
-        courses: ["Computer Security"],
-        user: {
-            id: '1',
-            name: 'John',
-            surname: 'Doe',
-        },
-    })
-})
+import { API_URL } from '../constants/api';
+import axios from 'axios';
 
 const MyBooksPage = ({ navigation }) => {
+    const [books, setBooks] = React.useState([]);
+    React.useEffect(() => {
+        fetchMyBooks()
+    }, []);
+
+    const fetchMyBooks = async () => {
+        try {
+            const url = `${API_URL}/my_books`
+            const response = await axios.get(url);
+            setBooks(response.data);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    };
+
+
     return (
         <View style={styles.container}>
             <Flex direction='row'>
@@ -35,9 +35,9 @@ const MyBooksPage = ({ navigation }) => {
                 <Heading fontSize="xl" p="4" pb="3">
                     My Books
                 </Heading>
-                <FlatList data={myBooks} renderItem={({
+                <FlatList data={books} renderItem={({
                     item
-                }) => <Box marginBottom={4} marginRight={1}>
+                }) => <Box key={item.book_id} marginBottom={4} marginRight={1}>
                         <HStack justifyContent="space-between">
                             <Image rounded='lg' style={styles.imageCover} source={item.image} alt='image' />
                             <VStack justifyContent='space-between' pl={2} width='80%' minHeight={100}>
@@ -47,10 +47,10 @@ const MyBooksPage = ({ navigation }) => {
                                 <Text fontSize="xs" _light={{
                                     color: "violet.500"
                                 }} fontWeight="500">
-                                    by {item.authors.join(", ")}.
+                                    by {item.author}.
                                 </Text>
                                 <Text fontSize="xs" color="coolGray.800" alignSelf="flex-start">
-                                    Courses: {item.courses}
+                                    Course: {item.course}
                                 </Text>
                                 <Button onPress={() => {
                                     navigation.navigate('SwapOffer')

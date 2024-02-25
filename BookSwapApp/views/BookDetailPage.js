@@ -1,16 +1,48 @@
-import { Input, Icon, Text, Box, Heading, FlatList, HStack, VStack, Spacer, Image, Button } from 'native-base';
+import { Text, Box, HStack, VStack, Image, Button } from 'native-base';
 import { StyleSheet, View } from 'react-native';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React from 'react';
 import { AuthContext } from '../util/context';
+import { API_URL } from '../constants/api';
+import axios from 'axios';
+import { useToast } from 'native-base';
 
 
-const API_URL = 'http://localhost:8000/api';
 
 const BookDetailPage = ({ navigation, route }) => {
     const { isSignedIn } = React.useContext(AuthContext);
+    const toast = useToast();
     const item = route.params && route.params.book ? route.params.book : {}
+
+
+    console.log({ item })
+
+
+    const scheduleSwap = async () => {
+        try {
+            console.log({
+                book_id: item.book_id,
+                receiver_id: item.user_id,
+            })
+            const url = `${API_URL}/schedule_swap`
+            const response = await axios.post(url, {
+                book_id: item.book_id,
+                receiver_id: item.user_id
+            });
+
+            console.log('scheduled successfully', response.data)
+            toast.show({
+                title: "Swap scheduled successfully!",
+                placement: "bottom"
+            })
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            toast.show({
+                title: "Error scheduling swap",
+                placement: "bottom"
+            })
+        }
+    }
+
     return (
         <View style={styles.container}>
             <Box marginBottom={4}>
@@ -38,11 +70,12 @@ const BookDetailPage = ({ navigation, route }) => {
                     </VStack>
                     <HStack width='100%'>
                         <Button size='lg' width='100%' colorScheme="primary" variant='solid' onPress={() => {
-                            if (isSignedIn) {
-                                navigation.navigate('ScheduleSwap')
-                            } else {
-                                navigation.navigate('SignIn')
-                            }
+                            // if (isSignedIn) {
+                            //     navigation.navigate('ScheduleSwap')
+                            // } else {
+                            //     navigation.navigate('SignIn')
+                            // }
+                            scheduleSwap();
                         }}>Schedule Swap</Button>
                     </HStack>
                 </VStack>

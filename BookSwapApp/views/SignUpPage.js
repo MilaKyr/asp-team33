@@ -4,11 +4,8 @@ import { StyleSheet, View } from 'react-native';
 import { AuthContext } from '../util/context';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_URL } from '../constants/api';
 
-
-
-
-const API_URL = 'http://localhost:8000/api';
 
 
 const validateEmail = (email) => {

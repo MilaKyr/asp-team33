@@ -3,8 +3,8 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import axios from 'axios';
 import { useState } from 'react';
+import { API_URL } from '../constants/api';
 
-const API_URL = 'http://localhost:8000/api';
 
 const SearchPage = ({ navigation }) => {
     const [bookResults, setBookResults] = useState([])

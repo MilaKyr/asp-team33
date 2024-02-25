@@ -118,7 +118,7 @@ async function insert_bookimage(bookIds, userIds) {
         var book_id = bookIds.get(book.title);
         for (user_email of book.user_email) {
             var user_id = userIds.get(user_email);
-            values.push({ book_id: book_id, user_id: user_id, image: "pg_read_binary_file(" + book.image_path + ")" })
+            values.push({ book_id: book_id, user_id: user_id, image: book.image_path.toString() })
         }
     }
     var query = utils.insert_data("bookimage", ['book_id', 'user_id', 'image'], values);

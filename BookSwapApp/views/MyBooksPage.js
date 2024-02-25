@@ -16,6 +16,7 @@ const MyBooksPage = ({ navigation }) => {
     const fetchMyBooks = async () => {
         try {
             const url = `${API_URL}/my_books`
+            console.log('Fecthing books:');
             const response = await axios.get(url);
             setBooks(response.data);
             setIsLoading(false)

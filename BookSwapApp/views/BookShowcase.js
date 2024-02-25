@@ -16,11 +16,6 @@ const BookShowcase = ({ navigation }) => {
       const fetchData = async () => {
         try {
           const response = await axios.get(API_URL);
-
-          console.log('============?')
-          const res = response.data.map(x => x.image);
-          
-          console.log({ response: res  })
           setData(response.data);
         } catch (error) {
           console.error('Error fetching data:', error);
@@ -31,7 +26,7 @@ const BookShowcase = ({ navigation }) => {
     return (
         <View style={styles.bookShowcase}>
             <ScrollView horizontal showsHorizontalScrollIndicator pagingEnable style={styles.scrollView}>
-                {data.map((item) => <BookShowcaseItem navigation={navigation} item={item} />)}
+                {data.map((item, index) => <BookShowcaseItem key={`${item.book_id}-${index}`} navigation={navigation} item={item} index={index} />)}
             </ScrollView>
         </View>
     );

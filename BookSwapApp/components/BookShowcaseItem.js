@@ -3,7 +3,7 @@ import { StyleSheet, Image, Pressable } from 'react-native';
 import { encode as btoa } from 'base-64'
 
 
-const BookShowcaseItem = ({ item, navigation }) => {
+const BookShowcaseItem = ({ item, navigation, index }) => {
     const arrayBufferToBase64ImageString = buffer => {
         const base64String = btoa(String.fromCharCode(...new Uint8Array(buffer.data)));
         return `data:image/jpeg;base64,${base64String}`;

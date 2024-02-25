@@ -8,13 +8,12 @@ const AVAILABLE_FILTERS = config.get('search_filters');
 var fullBookSelect = "SELECT appuser.id AS user_id, appuser.name, appuser.surname, \
 appuser.city, appuser.country, \
 book.id AS book_id, book.title, book.description, book.edition, book.icbn_10, \
-author.name||' '||author.surname AS author, bookimage.image, course.name AS course";
+author.name||' '||author.surname AS author, course.name AS course";
 
 var fullBookJoins = "LEFT JOIN userbook ON userbook.book_id = book.id \
 LEFT JOIN appuser ON appuser.id = userbook.user_id \
 LEFT JOIN bookauthor ON book.id = bookauthor.book_id \
 LEFT JOIN author ON author.id = bookauthor.author_id \
-LEFT JOIN bookimage ON bookimage.book_id = book.id AND bookimage.user_id  = appuser.id \
 LEFT JOIN bookcourse ON bookcourse.book_id = book.id \
 LEFT JOIN course ON course.id = bookcourse.course_id";
 
@@ -110,12 +109,11 @@ const MyBooks = async (request, response) => {
     try {
         const user_id = request.session.username;
         var statement = "SELECT user_books.book_id, book.title, book.description, book.edition, book.icbn_10, \
-        author.name||' '||author.surname AS author, bookimage.image, course.name AS course \
+        author.name||' '||author.surname AS author, course.name AS course \
         FROM (SELECT book_id, user_id FROM userbook WHERE user_id = $1) as user_books \
         LEFT JOIN book ON book.id = user_books.book_id \
         LEFT JOIN bookauthor ON book.id = bookauthor.book_id \
         LEFT JOIN author ON author.id = bookauthor.author_id \
-        LEFT JOIN bookimage ON bookimage.book_id = book.id AND bookimage.user_id  = user_books.user_id \
         LEFT JOIN bookcourse ON bookcourse.book_id = book.id \
         LEFT JOIN course ON course.id = bookcourse.course_id";
         const result = await getPool().query(statement, [user_id]);
@@ -129,10 +127,9 @@ const MyBooks = async (request, response) => {
 const MyBook = async (request, response) => {
     if (!request.session.loggedin) return response.status(401).send();
     try {
-        var bookStatement = fullBookSelect + " FROM (SELECT * FROM book WHERE id = $1) AS book " + fullBookJoins;
+        var statement = fullBookSelect + " FROM (SELECT * FROM book WHERE id = $1) AS book " + fullBookJoins;
         const book_id = request.params.id;
         const user_id = request.session.username;
-        var statement = bookStatement + " WHERE bookimage.user_id = $2";
         const result = await getPool().query(statement, [book_id, user_id]);
         response.status(200).json(result.rows[0]);
     } catch (err) {

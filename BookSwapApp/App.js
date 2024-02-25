@@ -19,6 +19,7 @@ import SignInPage from './views/SignInPage';
 import SwapSchedulePage from './views/SwapSchedulePage';
 import React from 'react';
 import { AuthContext } from './util/context';
+import UpdateBookPage from './views/UpdateBookPage';
 
 const config = {
   dependencies: {
@@ -52,6 +53,9 @@ function MyBooksStack() {
             <Stack.Screen options={{
               headerTitle: 'Upload New Book'
             }} name="UploadBook" component={UploadBookPage} />
+            <Stack.Screen options={{
+              headerTitle: 'Update Book'
+            }} name="UpdateBook" component={UpdateBookPage} />
           </>
         ) : (
           <>

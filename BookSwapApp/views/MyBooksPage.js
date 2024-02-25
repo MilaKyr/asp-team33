@@ -93,7 +93,11 @@ const MyBooksPage = ({ navigation }) => {
                                             })
                                         }}>View Offers for this book</Button>
                                         <HStack width='100%'>
-                                            <Button width='50%' variant='outline' onPress={() => console.log("hello world")}>Update</Button>
+                                            <Button width='50%' variant='outline' onPress={() => {
+                                                navigation.navigate('UpdateBook', {
+                                                    book: item
+                                                })
+                                            }}>Update</Button>
                                             <Button colorScheme="secondary" width='50%' variant='outline' onPress={() => {
                                                 deleteBook(item.book_id)
                                             }}>Delete</Button>

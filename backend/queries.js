@@ -9,6 +9,7 @@ const AVAILABLE_FILTERS = config.get('search_filters');
 var fullBookSelect = "SELECT appuser.id AS user_id, appuser.name, appuser.surname, \
 appuser.city, appuser.country, \
 book.id AS book_id, book.title, book.description, book.edition, book.icbn_10, \
+booktype.id as book_type_id, booktype.name as book_type, \
 author.name||' '||author.surname AS author, course.name AS course ";
 
 var fullBookJoins = " LEFT JOIN userbook ON userbook.book_id = book.id \
@@ -16,7 +17,18 @@ LEFT JOIN appuser ON appuser.id = userbook.user_id \
 LEFT JOIN bookauthor ON book.id = bookauthor.book_id \
 LEFT JOIN author ON author.id = bookauthor.author_id \
 LEFT JOIN bookcourse ON bookcourse.book_id = book.id \
+LEFT JOIN booktype ON booktype.id = book.type_id \
 LEFT JOIN course ON course.id = bookcourse.course_id";
+
+var swapsSelect = "SELECT request.*, status.name as status_name, \
+sender.name as sender_name, sender.surname as sender_surname, \
+sender.city as sender_city,  sender.country as sender_country, \
+receiver.name as receiver_name, receiver.surname as receiver_surname,  \
+receiver.city as receiver_city,  receiver.country as receiver_country \
+FROM request \
+LEFT JOIN status ON status.id = request.status_id \
+LEFT JOIN appuser as sender ON sender.id = request.sender_user_id \
+LEFT JOIN appuser as receiver ON receiver.id = request.receiver_user_id "
 
 const bookShowcase = async (request, response) => {
     try {
@@ -109,14 +121,9 @@ const MyBooks = async (request, response) => {
     if (!request.session.loggedin) return response.status(401).send();
     try {
         const user_id = request.session.username;
-        var statement = "SELECT user_books.book_id, book.title, book.description, book.edition, book.icbn_10, \
-        author.name||' '||author.surname AS author, course.name AS course \
-        FROM (SELECT book_id, user_id FROM userbook WHERE user_id = $1) as user_books \
-        LEFT JOIN book ON book.id = user_books.book_id \
-        LEFT JOIN bookauthor ON book.id = bookauthor.book_id \
-        LEFT JOIN author ON author.id = bookauthor.author_id \
-        LEFT JOIN bookcourse ON bookcourse.book_id = book.id \
-        LEFT JOIN course ON course.id = bookcourse.course_id";
+        var statement = fullBookSelect + 
+        " FROM (SELECT book_id, user_id FROM userbook WHERE user_id = $1) as user_books \
+        LEFT JOIN book ON book.id = user_books.book_id " + fullBookJoins;
         const result = await getPool().query(statement, [user_id]);
         response.status(200).json(result.rows);
     } catch (err) {
@@ -131,7 +138,7 @@ const MyBook = async (request, response) => {
         var statement = fullBookSelect + " FROM (SELECT * FROM book WHERE id = $1) AS book " + fullBookJoins;
         const book_id = request.params.id;
         const user_id = request.session.username;
-        const result = await getPool().query(statement, [book_id, user_id]);
+        const result = await getPool().query(statement, [book_id]);
         response.status(200).json(result.rows[0]);
     } catch (err) {
         console.error(err);
@@ -220,9 +227,7 @@ const Swaps = async (request, response) => {
     if (!request.session.loggedin) return response.status(401).send();
     try {
         const user_id = request.session.username;
-        const statement = "SELECT request.*, status.name as status_name FROM request \
-        LEFT JOIN status ON status.id = request.status_id \
-        WHERE receiver_user_id = $1";
+        const statement = swapsSelect + " WHERE receiver_user_id = $1";
         const results = await getPool().query(statement, [user_id]);
         return response.status(200).json(results.rows);
     } catch (err) {
@@ -394,9 +399,7 @@ const sentSwaps = async (request, response) => {
     if (!request.session.loggedin) return response.status(401).send();
     try {
         const user_id = request.session.username;
-        const statement = "SELECT request.*, status.name as status_name FROM request \
-        LEFT JOIN status ON status.id = request.status_id \
-        WHERE sender_user_id = $1";
+        const statement = swapsSelect + " WHERE sender_user_id = $1";
         const results = await getPool().query(statement, [user_id]);
         return response.status(200).json(results.rows);
     } catch (err) {

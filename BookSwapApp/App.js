@@ -6,7 +6,7 @@ import HomePage from './views/HomePage';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { NativeBaseProvider } from "native-base";
+import { Button, NativeBaseProvider } from "native-base";
 import { LinearGradient } from 'expo-linear-gradient';
 import SearchPage from './views/SearchPage';
 import MyBooksPage from './views/MyBooksPage';
@@ -42,7 +42,7 @@ function MyBooksStack() {
         isSignedIn ? (
           <>
             <Stack.Screen options={{
-              headerShown: false
+              headerShown: false,
             }} name="Books" component={MyBooksPage} />
             <Stack.Screen options={{
               headerTitle: 'Offers for Book'
@@ -148,14 +148,16 @@ export default function App() {
     bootstrapAsync();
   }, []);
 
+  const handleSignOut = async () => {
+    dispatch({ type: 'SIGN_OUT' });
+    await AsyncStorage.removeItem('userToken');
+  }
+
   const authContext = {
     signIn: async (token) => {
       dispatch({ type: 'SIGN_IN', token: token });
     },
-    signOut: async() => {
-      dispatch({ type: 'SIGN_OUT' });
-      await AsyncStorage.removeItem('userToken');
-    },
+    signOut: handleSignOut,
     signUp: async (token) => {
       dispatch({ type: 'SIGN_IN', token: token });
     },
@@ -193,7 +195,17 @@ export default function App() {
             <Tab.Screen name="Search" component={SearchStack} />
             <Tab.Screen options={{
               title: 'My Books',
-              headerTitle: 'My Books'
+              headerTitle: 'My Books',
+              headerRight: () => {
+                if (state.userToken != null) {
+                  return (
+                    <Button variant='ghost' onPress={() => {
+                      handleSignOut()
+                    }}>Sign Out</Button>
+                  )
+                }
+                return null;
+              },
             }} name="MyBooks" component={MyBooksStack} />
           </Tab.Navigator>
         </NavigationContainer>

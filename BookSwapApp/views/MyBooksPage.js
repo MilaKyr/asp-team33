@@ -72,6 +72,7 @@ const MyBooksPage = ({ navigation }) => {
         fetchMyBooks()
     }, []);
 
+
     const fetchMyBooks = async () => {
         try {
             const url = `${API_URL}/my_books`
@@ -133,7 +134,7 @@ const MyBooksPage = ({ navigation }) => {
                     <FlatList data={books} renderItem={
                         ({
                             item
-                        }) => <RenderBookItem item={item} navigation={navigation}  />} keyExtractor={item => item.book_id} />
+                        }) => <RenderBookItem item={item} navigation={navigation} />} keyExtractor={item => item.book_id} />
                 )}
 
             </Box >

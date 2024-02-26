@@ -5,6 +5,62 @@ import { API_URL } from '../constants/api';
 import axios from 'axios';
 import { AuthContext } from '../util/context';
 
+const RenderBookItem = ({ item, navigation }) => {
+    const [image, setImage] = React.useState(null);
+
+    const fetchImage = async () => {
+        try {
+            const response = await axios.get(API_URL + `/image?book_id=${item.book_id}&user_id=${item.user_id}`);
+            setImage(response.data)
+        } catch (error) {
+
+        }
+    }
+
+    React.useEffect(() => {
+        fetchImage()
+    }, [])
+
+    return (
+        <Box key={item.book_id
+        } marginBottom={4} marginRight={1}>
+            <HStack justifyContent="space-between">
+                {image ? <Image style={styles.imageCover} source={{
+                    uri: `data:image/png;base64,${image}`
+                }} alt='image' /> : null}
+                <VStack justifyContent='space-between' pl={2} width='80%' minHeight={100}>
+                    <Text color="coolGray.800" bold>
+                        {item.title}
+                    </Text>
+                    <Text fontSize="xs" _light={{
+                        color: "violet.500"
+                    }} fontWeight="500">
+                        by {item.author}.
+                    </Text>
+                    <Text fontSize="xs" color="coolGray.800" alignSelf="flex-start">
+                        Course: {item.course}
+                    </Text>
+                    <Button onPress={() => {
+                        navigation.navigate('SwapOffer', {
+                            book: item
+                        })
+                    }}>View Offers for this book</Button>
+                    <HStack width='100%'>
+                        <Button width='50%' variant='outline' onPress={() => {
+                            navigation.navigate('UpdateBook', {
+                                book: item
+                            })
+                        }}>Update</Button>
+                        <Button colorScheme="secondary" width='50%' variant='outline' onPress={() => {
+                            deleteBook(item.book_id)
+                        }}>Delete</Button>
+                    </HStack>
+                </VStack>
+            </HStack>
+        </Box>
+    );
+}
+
 const MyBooksPage = ({ navigation }) => {
     const [books, setBooks] = React.useState([]);
     const [isLoading, setIsLoading] = React.useState(true);
@@ -77,40 +133,7 @@ const MyBooksPage = ({ navigation }) => {
                     <FlatList data={books} renderItem={
                         ({
                             item
-                        }) => <Box key={item.book_id
-                        } marginBottom={4} marginRight={1}>
-                                <HStack justifyContent="space-between">
-                                    <Image rounded='lg' style={styles.imageCover} source={item.image} alt='image' />
-                                    <VStack justifyContent='space-between' pl={2} width='80%' minHeight={100}>
-                                        <Text color="coolGray.800" bold>
-                                            {item.title}
-                                        </Text>
-                                        <Text fontSize="xs" _light={{
-                                            color: "violet.500"
-                                        }} fontWeight="500">
-                                            by {item.author}.
-                                        </Text>
-                                        <Text fontSize="xs" color="coolGray.800" alignSelf="flex-start">
-                                            Course: {item.course}
-                                        </Text>
-                                        <Button onPress={() => {
-                                            navigation.navigate('SwapOffer', {
-                                                book: item
-                                            })
-                                        }}>View Offers for this book</Button>
-                                        <HStack width='100%'>
-                                            <Button width='50%' variant='outline' onPress={() => {
-                                                navigation.navigate('UpdateBook', {
-                                                    book: item
-                                                })
-                                            }}>Update</Button>
-                                            <Button colorScheme="secondary" width='50%' variant='outline' onPress={() => {
-                                                deleteBook(item.book_id)
-                                            }}>Delete</Button>
-                                        </HStack>
-                                    </VStack>
-                                </HStack>
-                            </Box>} keyExtractor={item => item.book_id} />
+                        }) => <RenderBookItem item={item} navigation={navigation}  />} keyExtractor={item => item.book_id} />
                 )}
 
             </Box >

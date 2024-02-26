@@ -6,7 +6,7 @@ import React, { useState } from 'react';
 import { API_URL } from '../constants/api';
 
 
-const RenderItem = ({item}) => {
+const RenderItem = ({item, navigation}) => {
     const [image, setImage] = React.useState(null);
 
     const fetchImage = async () => {
@@ -112,7 +112,7 @@ const SearchPage = ({ navigation }) => {
                 </Heading>
                 <FlatList data={bookResults} renderItem={({
                     item
-                }) => <RenderItem item={item} />} keyExtractor={item => item.id} />
+                }) => <RenderItem item={item} navigation={navigation} />} keyExtractor={item => item.id} />
             </Box>
         </View>
     );

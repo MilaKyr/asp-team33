@@ -5,7 +5,7 @@ import { API_URL } from '../constants/api';
 import axios from 'axios';
 import { AuthContext } from '../util/context';
 
-const RenderBookItem = ({ item, navigation }) => {
+const RenderBookItem = ({ item, navigation, deleteBook }) => {
     const [image, setImage] = React.useState(null);
 
     const fetchImage = async () => {
@@ -134,7 +134,7 @@ const MyBooksPage = ({ navigation }) => {
                     <FlatList data={books} renderItem={
                         ({
                             item
-                        }) => <RenderBookItem item={item} navigation={navigation} />} keyExtractor={item => item.book_id} />
+                        }) => <RenderBookItem deleteBook={deleteBook} item={item} navigation={navigation} />} keyExtractor={item => item.book_id} />
                 )}
 
             </Box >

@@ -29,18 +29,35 @@ function UpdateBookForm({ book: existingBook }) {
     const [courses, setCourses] = React.useState([]);
     const [bookTypes, setBookTypes] = React.useState([]);
     const [errors, setErrors] = React.useState({});
-    const [stages, setStages] = React.useState(1);
     const [book, setBook] = React.useState(null);
-    const [image, setImage] = React.useState(null);
     const toast = useToast();
 
     React.useEffect(() => {
         if (existingBook) {
             const formObject = {
-                
+                ...formData,
+                authors: existingBook.author,
+                book_type_id: existingBook.book_type_id,
+                title: existingBook.title,
+                description: existingBook.description,
+                icbn_10: existingBook.icbn_10,
+                year: existingBook.year,
+                edition: String(existingBook.edition),
+                course_id: formData.course_id
             }
+            setData(formObject)
         }
     }, []);
+
+    React.useEffect(() => {
+        const course = courses.find(c => c.name == existingBook.course)
+        if (course) {
+            setData({
+                ...formData,
+                course_id: course.id
+            })
+        }
+    }, [courses])
 
 
     const validate = (dataToSend) => {
@@ -62,46 +79,6 @@ function UpdateBookForm({ book: existingBook }) {
         return valid;
     };
 
-    const onImageUpload = async () => {
-        try {
-            let filename = image.split('/').pop();
-            let match = /\.(\w+)$/.exec(filename);
-            let type = match ? `image/${match[1]}` : `image`;
-
-            let formData = new FormData();
-            formData.append('image', { uri: image, name: filename, type });
-
-            const url = `${API_URL}/add_image/${book}`
-            const response = await axios.post(url, formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
-            console.log('Uploaded the book image', response.data)
-            toast.show({
-                title: "Image uploaded successfully",
-                placement: "bottom"
-            })
-            setBook(null)
-            setStages(1)
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        }
-    }
-
-    const checkForCameraRollPermission = async () => {
-        const { status } = await ImagePicker.getMediaLibraryPermissionsAsync();
-        console.log('status', status)
-        if (status !== 'granted' && status !== 'undetermined') {
-            alert("Please grant camera roll permissions inside your system's settings");
-        } else {
-            console.log('Media Permissions are granted')
-        }
-    }
-
-    React.useEffect(() => {
-        checkForCameraRollPermission()
-    }, []);
-
-
     const onSubmit = async () => {
         // validate() ? console.log('Submitted') : console.log('Validation Failed');
         const dataToSend = {
@@ -119,20 +96,23 @@ function UpdateBookForm({ book: existingBook }) {
             return;
         }
         try {
-            const url = `${API_URL}/add_book`
-            const response = await axios.post(url, {
+            const url = `${API_URL}/update_book/${existingBook.book_id}`
+            const response = await axios.put(url, {
                 ...dataToSend
             });
             console.log('Uploaded the book', response.data)
             setBook(response.data)
-            setStages(2)
             toast.show({
-                title: "Book uploaded successfully",
+                title: "Book updated successfully",
                 placement: "bottom"
             })
             setData({})
         } catch (error) {
-            console.error('Error fetching data:', error);
+            console.log('Error fetching data:', error);
+            toast.show({
+                title: "Book update failed",
+                placement: "bottom"
+            })
         }
     };
 
@@ -162,49 +142,13 @@ function UpdateBookForm({ book: existingBook }) {
         getBookTypes();
     }, [])
 
-
-    const addImage = async () => {
-        let _image = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            aspect: [4, 3],
-            quality: 1,
-            selectionLimit: 0
-        });
-        if (!_image.cancelled) {
-            const { assets } = _image;
-            const asset = assets[0] || {}
-            setImage(asset.uri);
-        }
-    }
-
-    if (stages === 2 && book !== null) {
-        console.log({ image, book })
-        return (
-            <VStack width='100%' height='100%' justifyContent='center' alignItems='center'>
-                {
-                    image && <Image alt='dynamic image uploaded for book' source={{ uri: image }} style={{ width: '80%', height: 400 }} />
-                }
-                <Pressable onPress={addImage}>
-                    <VStack width='100%' justifyContent='center' alignItems='center'>
-                        <AntDesign name="camera" size={40} color="black" />
-                        <Text>{image ? 'Edit' : 'Upload'} Image</Text>
-                    </VStack>
-                </Pressable>
-                {image && <Button size='lg' onPress={onImageUpload} mt="5" colorScheme="cyan">
-                    Upload Book Image
-                </Button>}
-            </VStack>
-        )
-    }
-
     return <ScrollView>
         <VStack width="100%">
             <FormControl isRequired isInvalid={'title' in errors}>
                 <FormControl.Label _text={{
                     bold: true
                 }}>Title</FormControl.Label>
-                <Input size='xl' placeholder="Book Title" onChangeText={value => setData({
+                <Input size='xl' value={formData.title} placeholder="Book Title" onChangeText={value => setData({
                     ...formData,
                     title: value
                 })} />
@@ -214,7 +158,7 @@ function UpdateBookForm({ book: existingBook }) {
                 <FormControl.Label _text={{
                     bold: true
                 }}>Description</FormControl.Label>
-                <Input size='xl' placeholder="Book details" onChangeText={value => setData({
+                <Input size='xl' value={formData.description} placeholder="Book details" onChangeText={value => setData({
                     ...formData,
                     description: value
                 })} />
@@ -224,7 +168,7 @@ function UpdateBookForm({ book: existingBook }) {
                 <FormControl.Label _text={{
                     bold: true
                 }}>Authors</FormControl.Label>
-                <Input size='xl' placeholder="Authors (Comma separated e.g. John, Jane)" onChangeText={value => setData({
+                <Input size='xl' value={formData.authors} placeholder="Authors (Comma separated e.g. John, Jane)" onChangeText={value => setData({
                     ...formData,
                     authors: value
                 })} />
@@ -234,7 +178,7 @@ function UpdateBookForm({ book: existingBook }) {
                 <FormControl.Label _text={{
                     bold: true
                 }}>Year</FormControl.Label>
-                <Input size='xl' placeholder="Book Year" onChangeText={value => setData({
+                <Input size='xl' value={formData.year} placeholder="Book Year" onChangeText={value => setData({
                     ...formData,
                     year: value
                 })} />
@@ -285,7 +229,7 @@ function UpdateBookForm({ book: existingBook }) {
                 <FormControl.Label _text={{
                     bold: true
                 }}>ICBN</FormControl.Label>
-                <Input size='xl' placeholder="Book Year" onChangeText={value => setData({
+                <Input size='xl' value={formData.icbn_10} placeholder="Book Year" onChangeText={value => setData({
                     ...formData,
                     icbn_10: value
                 })} />
@@ -294,13 +238,13 @@ function UpdateBookForm({ book: existingBook }) {
                 <FormControl.Label _text={{
                     bold: true
                 }}>Book Edition</FormControl.Label>
-                <Input size='xl' placeholder="Edition (optional)" onChangeText={value => setData({
+                <Input size='xl' value={formData.edition} placeholder="Edition (optional)" onChangeText={value => setData({
                     ...formData,
                     edition: value
                 })} />
             </FormControl>
             <Button size='lg' onPress={onSubmit} mt="5" colorScheme="cyan">
-                Upload Book
+                Update Book
             </Button>
         </VStack>
     </ScrollView>;

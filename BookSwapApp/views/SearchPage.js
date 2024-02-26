@@ -4,14 +4,58 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import axios from 'axios';
 import React, { useState } from 'react';
 import { API_URL } from '../constants/api';
-import { encode as btoa } from 'base-64'
 
 
+const RenderItem = ({item}) => {
+    const [image, setImage] = React.useState(null);
+
+    const fetchImage = async () => {
+        try {
+            const response = await axios.get(API_URL + `/image?book_id=${item.book_id}&user_id=${item.user_id}`);
+            setImage(response.data)
+        } catch (error) {
+
+        }
+    }
+
+    React.useEffect(() => {
+        fetchImage()
+    }, [])
+
+
+    return (
+        <Pressable key={item.book_id} onPress={() => {
+            navigation.navigate('BookDetail', {
+                book: item
+            })
+        }}>
+            <Box marginBottom={4}>
+                <HStack justifyContent="space-between">
+                    {image ? <Image style={styles.imageCover} source={{
+                        uri: `data:image/png;base64,${image}`
+                    }} alt='image' /> : null}
+                    <VStack justifyContent='space-between' pl={2} width='80%' minHeight={100}>
+                        <Text color="coolGray.800" bold>
+                            {item.title}
+                        </Text>
+                        <Text fontSize="xs" _light={{
+                            color: "violet.500"
+                        }} fontWeight="500">
+                            by {item.authors.join(", ")}.
+                        </Text>
+                        <Text fontSize="xs" color="coolGray.800" alignSelf="flex-start">
+                            Courses: {item.course}
+                        </Text>
+                    </VStack>
+                </HStack>
+            </Box>
+        </Pressable>
+    );
+}
 
 const SearchPage = ({ navigation }) => {
     const [bookResults, setBookResults] = useState([])
     const [locations, setLocations] = useState([])
-    const [imageBooks, setimageBook] = useState({})
     const [countryFilter, setCountryFilter] = useState('')
 
     const searchBooks = (text) => {
@@ -20,11 +64,8 @@ const SearchPage = ({ navigation }) => {
         if (countryFilter.length > 0) {
             url = url + `${text ? '' : `''`}` + `&location=${countryFilter}`
         }
-
-        console.log('fetching with search', { url })
         axios.get(url).then((res) => {
             setBookResults(res.data)
-            getImages(res.data)
         }).catch(() => { })
     }
 
@@ -44,33 +85,13 @@ const SearchPage = ({ navigation }) => {
     }, [])
 
 
-    const getImages = (results) => {
-        const promises = results.map(book => {
-            const bookId = book.book_id;
-            const userId = book.user_id;
-            return axios.get(API_URL + `/image?book_id=${bookId}&user_id=${userId}`).then((res) => {
-                setimageBook({
-                    ...imageBooks,
-                    [bookId]: res.data
-                })
-            }).catch(() => { });
-        })
-        Promise.all(promises).then((res) => {
-        }).catch(err => { })
-    }
-
-    const getImage = async (image) => {
-        return `data:image/png;base64,${image}`;
-    }
-
-
     const filterLocation = (country = '') => {
         setCountryFilter(country.toLowerCase());
     }
 
     return (
         <View style={styles.container}>
-            <View style={styles.subsets}>
+            <View style={styles.paddingX}>
                 <Input onChangeText={(text) => {
                     searchBooks(text)
                 }} size="2xl" enterKeyHint='search' placeholder="Search for interested books" variant="rounded" width="100%" fontSize="14" InputLeftElement={<Icon ml="2" size="4" color="gray.400" as={<Ionicons name="search" />} />} />
@@ -91,32 +112,7 @@ const SearchPage = ({ navigation }) => {
                 </Heading>
                 <FlatList data={bookResults} renderItem={({
                     item
-                }) => <Pressable key={item.book_id} onPress={() => {
-                    navigation.navigate('BookDetail', {
-                        book: item
-                    })
-                }}>
-                        <Box marginBottom={4}>
-                            <HStack justifyContent="space-between">
-                                <Image rounded='lg' style={styles.imageCover} source={{
-                                    uri: getImage(imageBooks[String(item.book_id)])
-                                }} alt='image' />
-                                <VStack justifyContent='space-between' pl={2} width='80%' minHeight={100}>
-                                    <Text color="coolGray.800" bold>
-                                        {item.title}
-                                    </Text>
-                                    <Text fontSize="xs" _light={{
-                                        color: "violet.500"
-                                    }} fontWeight="500">
-                                        by {item.authors.join(", ")}.
-                                    </Text>
-                                    <Text fontSize="xs" color="coolGray.800" alignSelf="flex-start">
-                                        Courses: {item.course}
-                                    </Text>
-                                </VStack>
-                            </HStack>
-                        </Box>
-                    </Pressable>} keyExtractor={item => item.id} />
+                }) => <RenderItem item={item} />} keyExtractor={item => item.id} />
             </Box>
         </View>
     );
@@ -126,8 +122,12 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
     },
+    paddingX: {
+        paddingHorizontal: 8,
+    },
     subsets: {
-        paddingHorizontal: 8
+        paddingHorizontal: 8,
+        flex: 1
     },
     imageCover: {
         width: '20%',

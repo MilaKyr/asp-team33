@@ -152,7 +152,10 @@ export default function App() {
     signIn: async (token) => {
       dispatch({ type: 'SIGN_IN', token: token });
     },
-    signOut: () => dispatch({ type: 'SIGN_OUT' }),
+    signOut: async() => {
+      dispatch({ type: 'SIGN_OUT' });
+      await AsyncStorage.removeItem('userToken');
+    },
     signUp: async (token) => {
       dispatch({ type: 'SIGN_IN', token: token });
     },

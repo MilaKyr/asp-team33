@@ -37,7 +37,7 @@ config.emailTransporter.auth.pass = process.env.EMAIL_AUTH_PASSWORD || "REPLACE-
 
 // image resizing
 config.imageResize = {};
-config.imageResize.height = parseInt(process.env.IMAGE_RESIZE_HEIGHT) || "smtp.forwardemail.net";
+config.imageResize.height = parseInt(process.env.IMAGE_RESIZE_HEIGHT) || 350;
 config.imageResize.width = parseInt(process.env.IMAGE_RESIZE_WIDTH) || 465;
 config.imageResize.fit = process.env.IMAGE_RESIZE_FIT || 'contain';
 

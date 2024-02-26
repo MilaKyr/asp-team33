@@ -1,4 +1,4 @@
-import { Text, Box, HStack, VStack, Image, Button } from 'native-base';
+import { Text, Box, HStack, VStack, Image, Button, ScrollView } from 'native-base';
 import { StyleSheet, View } from 'react-native';
 import React from 'react';
 import { AuthContext } from '../util/context';
@@ -10,11 +10,25 @@ import { useToast } from 'native-base';
 
 const BookDetailPage = ({ navigation, route }) => {
     const { isSignedIn } = React.useContext(AuthContext);
+    const [image, setImage] = React.useState(null);
     const toast = useToast();
     const item = route.params && route.params.book ? route.params.book : {}
 
 
     console.log({ item })
+
+    const fetchImage = async () => {
+        try {
+            const response = await axios.get(API_URL + `/image?book_id=${item.book_id}&user_id=${item.user_id}`);
+            setImage(response.data)
+        } catch (error) {
+
+        }
+    }
+
+    React.useEffect(() => {
+        fetchImage()
+    }, [])
 
 
     const scheduleSwap = async () => {
@@ -44,12 +58,14 @@ const BookDetailPage = ({ navigation, route }) => {
     }
 
     return (
-        <View style={styles.container}>
+        <ScrollView style={styles.container}>
             <Box marginBottom={4}>
                 <VStack justifyContent="space-between">
-                    <Image rounded='lg' style={styles.imageCover} source={item.image} alt='image' />
-                    <VStack justifyContent='space-between' pl={2} width='80%' minHeight={100}>
-                        <Text color="coolGray.800" bold>
+                    {image ? <Image rounded='lg' style={styles.imageCover} source={{
+                        uri:`data:image/png;base64,${image}`
+                    }} alt='image' /> : null}
+                    <VStack justifyContent='space-between' pl={2} width='100%' minHeight={100}>
+                        <Text marginY={3} color="coolGray.800" bold>
                             {item.title}
                         </Text>
 
@@ -64,34 +80,30 @@ const BookDetailPage = ({ navigation, route }) => {
                         <Text fontSize="xs" fontWeight="500">
                             Uploaded By: {item.name} {item.surname}
                         </Text>
-                        <Text color="coolGray.800">
+                        <Text marginY={3} width='100%' color="coolGray.800">
                             {item.description}
                         </Text>
                     </VStack>
                     <HStack width='100%'>
                         <Button size='lg' width='100%' colorScheme="primary" variant='solid' onPress={() => {
-                            // if (isSignedIn) {
-                            //     navigation.navigate('ScheduleSwap')
-                            // } else {
-                            //     navigation.navigate('SignIn')
-                            // }
                             scheduleSwap();
                         }}>Schedule Swap</Button>
                     </HStack>
+                    <HStack height={20}></HStack>
                 </VStack>
             </Box>
-        </View>
+        </ScrollView>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        paddingHorizontal: 2
+        paddingHorizontal: 2,
     },
     imageCover: {
         width: '100%',
-        height: '20%'
+        height: 300
     }
 });
 

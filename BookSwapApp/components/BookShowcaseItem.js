@@ -1,13 +1,26 @@
+import axios from 'axios';
 import { Box, HStack, Heading, Stack, Text } from 'native-base';
 import { StyleSheet, Image, Pressable } from 'react-native';
-import { encode as btoa } from 'base-64'
+import { API_URL } from '../constants/api';
+import React from 'react';
 
 
 const BookShowcaseItem = ({ item, navigation, index }) => {
-    const arrayBufferToBase64ImageString = buffer => {
-        const base64String = btoa(String.fromCharCode(...new Uint8Array(buffer.data)));
-        return `data:image/jpeg;base64,${base64String}`;
-    };
+    const [image, setImage] = React.useState(null);
+
+    const fetchImage = async () => {
+        try {
+            const response = await axios.get(API_URL + `/image?book_id=${item.book_id}&user_id=${item.user_id}`);
+            setImage(response.data)
+        } catch (error) {
+
+        }
+    }
+
+    React.useEffect(() => {
+        fetchImage()
+    }, [])
+
     return (
         <Pressable onPress={() => {
             navigation.navigate('BookDetail', {
@@ -19,7 +32,9 @@ const BookShowcaseItem = ({ item, navigation, index }) => {
                     backgroundColor: "gray.50"
                 }}>
                     <Box height='50%'>
-                        {/* <Image style={styles.imageCover} source={arrayBufferToBase64ImageString(item.image)} alt='image' /> */}
+                        {image ? <Image style={styles.imageCover} source={{
+                            uri: `data:image/png;base64,${image}`
+                        }} alt='image' /> : null}
                     </Box>
                     <Stack p="4" space={2}>
                         <Stack space={2}>

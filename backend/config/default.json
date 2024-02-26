@@ -26,5 +26,10 @@
       "pass": "REPLACE-WITH-YOUR-GENERATED-PASSWORD"
     },
     "from": "bookswap@app.com"
+  },
+  "imageResize": {
+    "height": 350,
+    "width": 450,
+    "fit": "contain"
   }
 }

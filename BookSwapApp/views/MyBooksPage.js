@@ -3,11 +3,14 @@ import React from 'react';
 import { RefreshControl, StyleSheet, View } from 'react-native';
 import { API_URL } from '../constants/api';
 import axios from 'axios';
+import { AuthContext } from '../util/context';
 
 const MyBooksPage = ({ navigation }) => {
     const [books, setBooks] = React.useState([]);
     const [isLoading, setIsLoading] = React.useState(true);
     const toast = useToast();
+
+    const { signOut } = React.useContext(AuthContext);
 
     React.useEffect(() => {
         fetchMyBooks()
@@ -23,11 +26,14 @@ const MyBooksPage = ({ navigation }) => {
             setBooks(response.data);
             setIsLoading(false)
         } catch (error) {
-            console.error('Error fetching data:', error);
+            console.error('Error fetching data:', error.response.status);
             toast.show({
                 title: "Unable to fetch books",
                 placement: "bottom"
             })
+            if (error && error.response && error.response.status == 401) {
+                signOut()
+            }
         }
     };
 

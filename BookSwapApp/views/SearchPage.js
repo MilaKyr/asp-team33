@@ -24,7 +24,7 @@ const SearchPage = ({ navigation }) => {
         console.log('fetching with search', { url })
         axios.get(url).then((res) => {
             setBookResults(res.data)
-            // getImages(res.data)
+            getImages(res.data)
         }).catch(() => { })
     }
 
@@ -37,7 +37,6 @@ const SearchPage = ({ navigation }) => {
 
     React.useEffect(() => {
         searchBooks('');
-        getBookLocations();
     }, [countryFilter])
 
     React.useEffect(() => {
@@ -60,16 +59,10 @@ const SearchPage = ({ navigation }) => {
         }).catch(err => { })
     }
 
-    const getImageFromBuffer = (imageBuffer) => {
-        return ''
-        // if (!imageBuffer) return '';
-        // const base64String = btoa(String.fromCharCode(...new Uint8Array(imageBuffer.data)));
-        // console.log(base64String)
-        // return `data:image/jpeg;base64,${base64String}`;
+    const getImage = async (image) => {
+        return `data:image/png;base64,${image}`;
     }
 
-
-    console.log({ locations })
 
     const filterLocation = (country = '') => {
         setCountryFilter(country.toLowerCase());
@@ -105,7 +98,9 @@ const SearchPage = ({ navigation }) => {
                 }}>
                         <Box marginBottom={4}>
                             <HStack justifyContent="space-between">
-                                <Image rounded='lg' style={styles.imageCover} source={bookResults ? getImageFromBuffer(imageBooks[String(item.book_id)]) : ''} alt='image' />
+                                <Image rounded='lg' style={styles.imageCover} source={{
+                                    uri: getImage(imageBooks[String(item.book_id)])
+                                }} alt='image' />
                                 <VStack justifyContent='space-between' pl={2} width='80%' minHeight={100}>
                                     <Text color="coolGray.800" bold>
                                         {item.title}

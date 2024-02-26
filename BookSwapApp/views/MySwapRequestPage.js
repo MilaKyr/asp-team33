@@ -1,5 +1,10 @@
-import { Box, Button, FlatList, HStack, Heading, Image, Text, VStack } from 'native-base';
-import { StyleSheet, View } from 'react-native';
+import axios from 'axios';
+import { Badge, Box, Button, FlatList, HStack, Heading, Image, Text, VStack, useToast } from 'native-base';
+import React from 'react';
+import { RefreshControl, StyleSheet, View } from 'react-native';
+import { API_URL } from '../constants/api';
+import { formatDistance } from "date-fns";
+import { OFFER_STATUS, OFFER_TO_SCHEME_MAPPER } from '../constants/enums';
 
 
 const mySwapRequests = Array.from([1, 2], (index) => {
@@ -22,32 +27,88 @@ const mySwapRequests = Array.from([1, 2], (index) => {
 
 
 const MySwapRequestPage = () => {
+    const [swapRequests, setSwapRequests] = React.useState([]);
+    const [isLoading, setIsLoading] = React.useState(true);
+    const [isDeclineLoading, setIsDeclineLoading] = React.useState(null);
+    const toast = useToast();
+
+    const fetchSwapRequests = async () => {
+        try {
+            const url = `${API_URL}/sent_swaps`
+            console.log('Fecthing books:');
+            const response = await axios.get(url);
+
+            console.log({ response: response.data })
+            setSwapRequests(response.data);
+            setIsLoading(false)
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            toast.show({
+                title: "Unable to fetch swap requests",
+                placement: "bottom"
+            })
+        }
+    };
+
+    const declineOffer = async (swapId) => {
+        try {
+            setIsDeclineLoading(swapId)
+            const url = `${API_URL}/update_swap/${swapId}`
+            console.log('Updateing swap request:', url);
+            const response = await axios.put(url, {
+                status_id: 2
+            });
+            console.log({ response: response.data })
+            fetchSwapRequests()
+            setIsDeclineLoading(null)
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            toast.show({
+                title: "Unable to update swap",
+                placement: "bottom"
+            })
+            setIsDeclineLoading(null)
+        }
+    };
+
+    React.useEffect(() => {
+        fetchSwapRequests()
+    }, [])
+
     return (
         <View style={styles.container}>
-            <Box>
-                <FlatList data={mySwapRequests} renderItem={({
-                    item
-                }) => <Box marginBottom={4} marginRight={1}>
-                        <HStack justifyContent="space-between">
-                            <Image rounded='lg' style={styles.imageCover} source={item.image} alt='image' />
-                            <VStack justifyContent='space-between' pl={2} width='80%' minHeight={100}>
-                                <Text color="coolGray.800" bold>
-                                    {item.title}
-                                </Text>
-                                <Text fontSize="xs" _light={{
-                                    color: "violet.500"
-                                }} fontWeight="500">
-                                    by {item.authors.join(", ")}.
-                                </Text>
-                                <Text fontSize="xs" color="coolGray.800" alignSelf="flex-start">
-                                    Courses: {item.courses}
-                                </Text>
-                                <HStack width='100%'>
-                                    <Button width='100%' colorScheme="secondary" variant='solid' onPress={() => console.log("hello world")}>Rescind Request</Button>
-                                </HStack>
-                            </VStack>
-                        </HStack>
-                    </Box>} keyExtractor={item => item.id} />
+            <Box height='100%'>
+                <FlatList data={swapRequests}
+                    refreshControl={
+                        <RefreshControl refreshing={isLoading} onRefresh={() => {
+                            fetchSwapRequests()
+                        }} />
+                    }
+                    renderItem={({
+                        item
+                    }) => <Box marginBottom={6} marginRight={1}>
+                            <HStack justifyContent="space-between">
+                                <VStack justifyContent='space-between' pl={2} width='100%' minHeight={100}>
+                                    <Badge marginTop={2} width={'40%'} rounded='3xl' variant='solid' colorScheme={OFFER_TO_SCHEME_MAPPER[OFFER_STATUS[item.status_id]]}>{OFFER_STATUS[item.status_id]}</Badge>
+
+                                    <Heading marginY={2} size='sm' color="coolGray.800" bold>
+                                        {`${item.receiver_name} ${item.receiver_surname}`}
+                                    </Heading>
+                                    <Heading marginY={2} size='xs' color="blue.800" bold>
+                                        {`${item.receiver_city}, ${item.receiver_country}`}
+                                    </Heading>
+
+                                    <Text fontSize="xs" color="coolGray.800" alignSelf="flex-start">
+                                        Requested: {formatDistance(item.request_date, new Date(), { addSuffix: true })}
+                                    </Text>
+                                    <HStack width='100%'>
+                                        <Button isLoading={isDeclineLoading == item.id} width='100%' colorScheme="secondary" variant='solid' onPress={() => {
+                                            declineOffer(item.id)
+                                        }}>Rescind Request</Button>
+                                    </HStack>
+                                </VStack>
+                            </HStack>
+                        </Box>} keyExtractor={item => item.id} />
             </Box>
         </View>
     );

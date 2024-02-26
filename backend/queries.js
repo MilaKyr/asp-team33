@@ -2,21 +2,33 @@ const crypto = require('./crypto');
 const utils = require("./utils");
 const { getPool } = require('./postgresql');
 const config = require('config');
+const sharp = require('sharp');
 const AVAILABLE_FILTERS = config.get('search_filters');
 
 
 var fullBookSelect = "SELECT appuser.id AS user_id, appuser.name, appuser.surname, \
 appuser.city, appuser.country, \
 book.id AS book_id, book.title, book.description, book.edition, book.icbn_10, \
-author.name||' '||author.surname AS author, bookimage.image, course.name AS course";
+booktype.id as book_type_id, booktype.name as book_type, \
+author.name||' '||author.surname AS author, course.name AS course ";
 
-var fullBookJoins = "LEFT JOIN userbook ON userbook.book_id = book.id \
+var fullBookJoins = " LEFT JOIN userbook ON userbook.book_id = book.id \
 LEFT JOIN appuser ON appuser.id = userbook.user_id \
 LEFT JOIN bookauthor ON book.id = bookauthor.book_id \
 LEFT JOIN author ON author.id = bookauthor.author_id \
-LEFT JOIN bookimage ON bookimage.book_id = book.id AND bookimage.user_id  = appuser.id \
 LEFT JOIN bookcourse ON bookcourse.book_id = book.id \
+LEFT JOIN booktype ON booktype.id = book.type_id \
 LEFT JOIN course ON course.id = bookcourse.course_id";
+
+var swapsSelect = "SELECT request.*, status.name as status_name, \
+sender.name as sender_name, sender.surname as sender_surname, \
+sender.city as sender_city,  sender.country as sender_country, \
+receiver.name as receiver_name, receiver.surname as receiver_surname,  \
+receiver.city as receiver_city,  receiver.country as receiver_country \
+FROM request \
+LEFT JOIN status ON status.id = request.status_id \
+LEFT JOIN appuser as sender ON sender.id = request.sender_user_id \
+LEFT JOIN appuser as receiver ON receiver.id = request.receiver_user_id "
 
 const bookShowcase = async (request, response) => {
     try {
@@ -49,7 +61,7 @@ const Search = async (request, response) => {
                 where_filter = " WHERE course.id = $1";
             } else if (filter_by == "title") {
                 where_filter = " WHERE LOWER(book.title) LIKE '%' || $1 || '%'";
-            } else if (filter_by == "location"){
+            } else if (filter_by == "location") {
                 where_filter = " WHERE LOWER(appuser.city) LIKE '%' || $1 || '%' OR LOWER(appuser.country) LIKE '%' || $1 || '%'";
             } else {
                 where_filter = " WHERE LOWER(author.name) LIKE '%' || $1 || '%' OR LOWER(author.surname) LIKE '%' || $1 || '%'";
@@ -109,15 +121,9 @@ const MyBooks = async (request, response) => {
     if (!request.session.loggedin) return response.status(401).send();
     try {
         const user_id = request.session.username;
-        var statement = "SELECT user_books.book_id, book.title, book.description, book.edition, book.icbn_10, \
-        author.name||' '||author.surname AS author, bookimage.image, course.name AS course \
-        FROM (SELECT book_id, user_id FROM userbook WHERE user_id = $1) as user_books \
-        LEFT JOIN book ON book.id = user_books.book_id \
-        LEFT JOIN bookauthor ON book.id = bookauthor.book_id \
-        LEFT JOIN author ON author.id = bookauthor.author_id \
-        LEFT JOIN bookimage ON bookimage.book_id = book.id AND bookimage.user_id  = user_books.user_id \
-        LEFT JOIN bookcourse ON bookcourse.book_id = book.id \
-        LEFT JOIN course ON course.id = bookcourse.course_id";
+        var statement = fullBookSelect + 
+        " FROM (SELECT book_id, user_id FROM userbook WHERE user_id = $1) as user_books \
+        LEFT JOIN book ON book.id = user_books.book_id " + fullBookJoins;
         const result = await getPool().query(statement, [user_id]);
         response.status(200).json(result.rows);
     } catch (err) {
@@ -129,11 +135,10 @@ const MyBooks = async (request, response) => {
 const MyBook = async (request, response) => {
     if (!request.session.loggedin) return response.status(401).send();
     try {
-        var bookStatement = fullBookSelect + " FROM (SELECT * FROM book WHERE id = $1) AS book " + fullBookJoins;
+        var statement = fullBookSelect + " FROM (SELECT * FROM book WHERE id = $1) AS book " + fullBookJoins;
         const book_id = request.params.id;
         const user_id = request.session.username;
-        var statement = bookStatement + " WHERE bookimage.user_id = $2";
-        const result = await getPool().query(statement, [book_id, user_id]);
+        const result = await getPool().query(statement, [book_id]);
         response.status(200).json(result.rows[0]);
     } catch (err) {
         console.error(err);
@@ -222,9 +227,7 @@ const Swaps = async (request, response) => {
     if (!request.session.loggedin) return response.status(401).send();
     try {
         const user_id = request.session.username;
-        const statement = "SELECT request.*, status.name as status_name FROM request \
-        LEFT JOIN status ON status.id = request.status_id \
-        WHERE receiver_user_id = $1";
+        const statement = swapsSelect + " WHERE receiver_user_id = $1";
         const results = await getPool().query(statement, [user_id]);
         return response.status(200).json(results.rows);
     } catch (err) {
@@ -287,8 +290,26 @@ const addImage = async (request, response) => {
         const statement = 'INSERT INTO bookimage (user_id, book_id, image) VALUES ($1, $2, $3 )';
         const book_id = parseInt(request.params.id);
         const user_id = request.session.username;
-        await getPool().query(statement, [user_id, book_id, request.file.buffer]);
+        const resizedBuffer = await sharp(request.file.buffer)
+            .resize(config.imageResize.height, config.imageResize.width, { fit: config.imageResize.fit })
+            .toBuffer()
+            .then(function (outputBuffer) { return outputBuffer.toString('base64') });
+        await getPool().query(statement, [user_id, book_id, resizedBuffer]);
         return response.status(201).send();
+    } catch (err) {
+        console.error(err);
+        return response.status(404).send();
+    }
+}
+
+const getImage = async (request, response) => {
+    try {
+        const statement = 'SELECT image FROM bookimage WHERE book_id = $1 AND user_id  = $2';
+        const book_id = parseInt(request.query.book_id);
+        const user_id = parseInt(request.query.user_id);
+        const res = await getPool().query(statement, [book_id, user_id]);
+        var encodedBuffer = res.rows[0].image;
+        return response.status(200).json(encodedBuffer);
     } catch (err) {
         console.error(err);
         return response.status(404).send();
@@ -363,6 +384,31 @@ const BookTypes = async (request, response) => {
     }
 }
 
+const RequestStatuses = async (request, response) => {
+    try {
+        var statement = "SELECT DISTINCT id, name FROM status";
+        const results = await getPool().query(statement);
+        return response.status(200).json(results.rows);
+    } catch (err) {
+        console.error(err);
+        return response.status(500).send();
+    }
+}
+
+const sentSwaps = async (request, response) => {
+    if (!request.session.loggedin) return response.status(401).send();
+    try {
+        const user_id = request.session.username;
+        const statement = swapsSelect + " WHERE sender_user_id = $1";
+        const results = await getPool().query(statement, [user_id]);
+        return response.status(200).json(results.rows);
+    } catch (err) {
+        console.error(err);
+        return response.status(500).send();
+    }
+}
+
+
 module.exports = {
     bookShowcase,
     Search,
@@ -381,4 +427,7 @@ module.exports = {
     Locations,
     Courses,
     BookTypes,
+    getImage,
+    RequestStatuses,
+    sentSwaps,
 };

@@ -1,9 +1,20 @@
 import { Button, FormControl, HStack, Heading, Input, Stack, Text, VStack } from 'native-base';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
+import { AuthContext } from '../util/context';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_URL } from '../constants/api';
 
 
-function SignUpForm({navigation}) {
+
+const validateEmail = (email) => {
+    // Regular expression for email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+};
+
+function SignUpForm({ onFormSubmit, isSubmitting }) {
     const [formData, setData] = React.useState({});
     const [errors, setErrors] = React.useState({});
 
@@ -20,14 +31,50 @@ function SignUpForm({navigation}) {
                 name: 'Name is too short'
             });
             return false;
+        } else if (formData.surname == null || formData.surname == '') {
+            setErrors({
+                ...errors,
+                surname: 'Last name is required.'
+            });
+            return false;
+        } else if (formData.surname.length < 3) {
+            setErrors({
+                ...errors,
+                surname: 'Last name is too short'
+            });
+            return false;
+        } else if (formData.email === undefined) {
+            setErrors({
+                ...errors,
+                email: 'Email is required'
+            });
+            return false;
         }
-
+        else if (!validateEmail(formData.email)) {
+            setErrors({
+                ...errors,
+                email: 'Email is not valid'
+            });
+            return false;
+        } else if (formData.password === undefined || formData.password == '') {
+            setErrors({
+                ...errors,
+                password: 'Password is required'
+            });
+            return false;
+        }
         return true;
     };
 
     const onSubmit = () => {
-        // validate() ? console.log('Submitted') : console.log('Validation Failed');
-        navigation.navigate('SignIn')
+        setErrors({});
+        console.log('validating')
+        if (validate()) {
+            console.log(formData)
+            onFormSubmit(formData)
+        } else {
+            console.log('errors:  ', errors)
+        }
     };
 
     return <VStack width="100%">
@@ -39,7 +86,7 @@ function SignUpForm({navigation}) {
                 ...formData,
                 name: value
             })} />
-            {'name' in errors ? <FormControl.ErrorMessage>Error</FormControl.ErrorMessage> : null}
+            {'name' in errors ? <FormControl.ErrorMessage>Please enter a valid name</FormControl.ErrorMessage> : null}
         </FormControl>
         <FormControl isRequired isInvalid={'surname' in errors}>
             <FormControl.Label _text={{
@@ -49,17 +96,17 @@ function SignUpForm({navigation}) {
                 ...formData,
                 surname: value
             })} />
-            {'surname' in errors ? <FormControl.ErrorMessage>Error</FormControl.ErrorMessage> : null}
+            {'surname' in errors ? <FormControl.ErrorMessage>Please enter a valid last name</FormControl.ErrorMessage> : null}
         </FormControl>
         <FormControl isRequired isInvalid={'email' in errors}>
             <FormControl.Label _text={{
                 bold: true
             }}>Email</FormControl.Label>
-            <Input size='xl' placeholder="user@example.com" onChangeText={value => setData({
+            <Input autoCapitalize='none' size='xl' placeholder="user@example.com" onChangeText={value => setData({
                 ...formData,
                 email: value
             })} />
-            {'email' in errors ? <FormControl.ErrorMessage>Error</FormControl.ErrorMessage> : null}
+            {'email' in errors ? <FormControl.ErrorMessage>Please enter a valid email</FormControl.ErrorMessage> : null}
         </FormControl>
         <FormControl isRequired isInvalid={'password' in errors}>
             <FormControl.Label _text={{
@@ -69,7 +116,7 @@ function SignUpForm({navigation}) {
                 ...formData,
                 password: value
             })} />
-            {'password' in errors ? <FormControl.ErrorMessage>Error</FormControl.ErrorMessage> : null}
+            {'password' in errors ? <FormControl.ErrorMessage>Please enter a valid password</FormControl.ErrorMessage> : null}
         </FormControl>
         <Button size='lg' onPress={onSubmit} mt="5" colorScheme="cyan">
             Register
@@ -78,12 +125,39 @@ function SignUpForm({navigation}) {
 }
 
 const SignUpPage = ({ navigation }) => {
+    const { signIn } = React.useContext(AuthContext);
+    const [isSubmitting, setSubmitting] = React.useState(false)
+
+
+    const onFormSubmit = ({ email, password, name, surname }) => {
+        setSubmitting(true)
+        axios.post(`${API_URL}/sign_up`, {
+            email,
+            password,
+            name,
+            surname
+        }).then(res => {
+            if (res.data) {
+                AsyncStorage.setItem('userToken', String(res.data));
+                setSubmitting(false)
+                signIn(String(res.data));
+            }
+        }).catch(err => {
+            console.log('error===>', err)
+        });
+    }
+
     return (
         <View style={styles.container}>
-           <HStack justifyContent='center' mb={8}>
-            <Heading>Join Book Swap App</Heading>
-           </HStack>
-            <SignUpForm navigation={navigation} />
+            <HStack justifyContent='center' mb={8}>
+                <Heading>Join Book Swap App</Heading>
+            </HStack>
+            <SignUpForm isSubmitting={isSubmitting} onFormSubmit={onFormSubmit} navigation={navigation} />
+            <Button size="md" variant="ghost" onPress={() => {
+                navigation.navigate('SignIn')
+            }}>
+                Sign In
+            </Button>
         </View>
     );
 }

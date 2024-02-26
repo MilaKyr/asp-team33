@@ -1,65 +1,109 @@
-import { Input, Icon, Text, Box, Heading, FlatList, HStack, VStack, Spacer, Image, Button } from 'native-base';
+import { Text, Box, HStack, VStack, Image, Button, ScrollView } from 'native-base';
 import { StyleSheet, View } from 'react-native';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import React from 'react';
+import { AuthContext } from '../util/context';
+import { API_URL } from '../constants/api';
+import axios from 'axios';
+import { useToast } from 'native-base';
 
-// TODO this will be changed with api call
-const item = {
-    id: 1,
-    title: "The Web Application Hacker's Handbook: Finding and Exploiting Security Flaws",
-    authors: ["Dafydd Stuttard", "Marcus Pinto"],
-    description: "The highly successful security book returns with a new edition, completely updatedWeb applications are the front door to most organizations, exposing them to attacks that may disclose personal information, execute fraudulent transactions, or compromise ordinary users. This practical book has been completely updated and revised to discuss the latest step-by-step techniques for attacking and defending the range of ever-evolving web applications. You'll explore the various new technologies employed in web applications that have appeared since the first edition and review the new attack techniques that have been developed, particularly in relation to the client side",
-    edition: "2nd",
-    icbn_10: "1118026470",
-    image: require('../assets/tim-alex-xG5VJW-7Bio-unsplash.jpg'),
-    courses: ["Computer Security"],
-    user: {
-        id: '1',
-        name: 'John',
-        surname: 'Doe',
-    },
-};
 
-const BookDetailPage = ({ navigation }) => {
+
+const BookDetailPage = ({ navigation, route }) => {
+    const { isSignedIn } = React.useContext(AuthContext);
+    const [image, setImage] = React.useState(null);
+    const toast = useToast();
+    const item = route.params && route.params.book ? route.params.book : {}
+
+
+    console.log({ item })
+
+    const fetchImage = async () => {
+        try {
+            const response = await axios.get(API_URL + `/image?book_id=${item.book_id}&user_id=${item.user_id}`);
+            setImage(response.data)
+        } catch (error) {
+
+        }
+    }
+
+    React.useEffect(() => {
+        fetchImage()
+    }, [])
+
+
+    const scheduleSwap = async () => {
+        try {
+            console.log({
+                book_id: item.book_id,
+                receiver_id: item.user_id,
+            })
+            const url = `${API_URL}/schedule_swap`
+            const response = await axios.post(url, {
+                book_id: item.book_id,
+                receiver_id: item.user_id
+            });
+
+            console.log('scheduled successfully', response.data)
+            toast.show({
+                title: "Swap scheduled successfully!",
+                placement: "bottom"
+            })
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            toast.show({
+                title: "Error scheduling swap",
+                placement: "bottom"
+            })
+        }
+    }
+
     return (
-        <View style={styles.container}>
+        <ScrollView style={styles.container}>
             <Box marginBottom={4}>
                 <VStack justifyContent="space-between">
-                    <Image rounded='lg' style={styles.imageCover} source={item.image} alt='image' />
-                    <VStack justifyContent='space-between' pl={2} width='80%' minHeight={100}>
-                        <Text color="coolGray.800" bold>
+                    {image ? <Image rounded='lg' style={styles.imageCover} source={{
+                        uri:`data:image/png;base64,${image}`
+                    }} alt='image' /> : null}
+                    <VStack justifyContent='space-between' pl={2} width='100%' minHeight={100}>
+                        <Text marginY={3} color="coolGray.800" bold>
                             {item.title}
                         </Text>
-                        <Text fontSize="xs" _light={{
+
+                        <Text marginY={2} fontSize="xs" _light={{
                             color: "violet.500"
                         }} fontWeight="500">
-                            by {item.authors.join(", ")}.
+                            by {item?.authors?.join(", ")}.
                         </Text>
-                        <Text fontSize="xs" color="coolGray.800" alignSelf="flex-start">
-                            Courses: {item.courses}
+                        <Text marginY={1} fontSize="xs" color="coolGray.800" alignSelf="flex-start">
+                            Courses: {item.course}
                         </Text>
-                        <Text fontSize="xs" fontWeight="500">
-                            Uploaded By: {item.user.name} {item.user.surname}
+                        <Text marginY={1} fontSize="xs" fontWeight="500">
+                            Uploaded By: {item.name} {item.surname}
+                        </Text>
+                        <Text marginY={3} width='100%' color="coolGray.800">
+                            {item.description}
                         </Text>
                     </VStack>
                     <HStack width='100%'>
                         <Button size='lg' width='100%' colorScheme="primary" variant='solid' onPress={() => {
-                            navigation.navigate('SignUp')
+                            scheduleSwap();
                         }}>Schedule Swap</Button>
                     </HStack>
+                    <HStack height={20}></HStack>
                 </VStack>
             </Box>
-        </View>
+        </ScrollView>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        paddingHorizontal: 2
+        paddingHorizontal: 2,
     },
     imageCover: {
         width: '100%',
-        height: '70%'
+        height: 300
     }
 });
 

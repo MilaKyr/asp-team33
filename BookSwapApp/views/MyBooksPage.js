@@ -1,28 +1,121 @@
-import { Box, Button, FlatList, Flex, HStack, Heading, Image, Pressable, Text, VStack } from 'native-base';
-import { StyleSheet, View } from 'react-native';
+import { Box, Button, FlatList, Flex, HStack, Heading, Image, Pressable, ScrollView, Spinner, Text, VStack, useToast } from 'native-base';
+import React from 'react';
+import { RefreshControl, StyleSheet, View } from 'react-native';
+import { API_URL } from '../constants/api';
+import axios from 'axios';
+import { AuthContext } from '../util/context';
 
+const RenderBookItem = ({ item, navigation, deleteBook }) => {
+    const [image, setImage] = React.useState(null);
 
-const myBooks = Array.from([1, 2], (index) => {
-    return ({
-        id: index,
-        title: "The Web Application Hacker's Handbook: Finding and Exploiting Security Flaws",
-        authors: ["Dafydd Stuttard", "Marcus Pinto"],
-        description: "The highly successful security book returns with a new edition, completely updatedWeb applications are the front door to most organizations, exposing them to attacks that may disclose personal information, execute fraudulent transactions, or compromise ordinary users. This practical book has been completely updated and revised to discuss the latest step-by-step techniques for attacking and defending the range of ever-evolving web applications. You'll explore the various new technologies employed in web applications that have appeared since the first edition and review the new attack techniques that have been developed, particularly in relation to the client side",
-        edition: "2nd",
-        icbn_10: "1118026470",
-        image: require('../assets/tim-alex-xG5VJW-7Bio-unsplash.jpg'),
-        courses: ["Computer Security"],
-        user: {
-            id: '1',
-            name: 'John',
-            surname: 'Doe',
-        },
-    })
-})
+    const fetchImage = async () => {
+        try {
+            const response = await axios.get(API_URL + `/image?book_id=${item.book_id}&user_id=${item.user_id}`);
+            setImage(response.data)
+        } catch (error) {
+
+        }
+    }
+
+    React.useEffect(() => {
+        fetchImage()
+    }, [])
+
+    return (
+        <Box key={item.book_id
+        } marginBottom={4} marginRight={1}>
+            <HStack justifyContent="space-between">
+                {image ? <Image style={styles.imageCover} source={{
+                    uri: `data:image/png;base64,${image}`
+                }} alt='image' /> : null}
+                <VStack justifyContent='space-between' pl={2} width='80%' minHeight={100}>
+                    <Text color="coolGray.800" bold>
+                        {item.title}
+                    </Text>
+                    <Text fontSize="xs" _light={{
+                        color: "violet.500"
+                    }} fontWeight="500">
+                        by {item.author}.
+                    </Text>
+                    <Text fontSize="xs" color="coolGray.800" alignSelf="flex-start">
+                        Course: {item.course}
+                    </Text>
+                    <Button onPress={() => {
+                        navigation.navigate('SwapOffer', {
+                            book: item
+                        })
+                    }}>View Offers for this book</Button>
+                    <HStack width='100%'>
+                        <Button width='50%' variant='outline' onPress={() => {
+                            navigation.navigate('UpdateBook', {
+                                book: item
+                            })
+                        }}>Update</Button>
+                        <Button colorScheme="secondary" width='50%' variant='outline' onPress={() => {
+                            deleteBook(item.book_id)
+                        }}>Delete</Button>
+                    </HStack>
+                </VStack>
+            </HStack>
+        </Box>
+    );
+}
 
 const MyBooksPage = ({ navigation }) => {
+    const [books, setBooks] = React.useState([]);
+    const [isLoading, setIsLoading] = React.useState(true);
+    const toast = useToast();
+
+    const { signOut } = React.useContext(AuthContext);
+
+    React.useEffect(() => {
+        fetchMyBooks()
+    }, []);
+
+
+    const fetchMyBooks = async () => {
+        try {
+            const url = `${API_URL}/my_books`
+            console.log('Fecthing books:');
+            const response = await axios.get(url);
+
+            console.log(response.data)
+            setBooks(response.data);
+            setIsLoading(false)
+        } catch (error) {
+            console.error('Error fetching data:', error.response.status);
+            toast.show({
+                title: "Unable to fetch books",
+                placement: "bottom"
+            })
+            if (error && error.response && error.response.status == 401) {
+                signOut()
+            }
+        }
+    };
+
+    const deleteBook = async (bookId) => {
+        try {
+            const url = `${API_URL}/my_book/${bookId}`
+            await axios.delete(url);
+            fetchMyBooks();
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            toast.show({
+                title: "Unable to delete book",
+                placement: "bottom"
+            })
+        }
+    };
+
+
+
     return (
-        <View style={styles.container}>
+        <ScrollView refreshControl={
+            <RefreshControl refreshing={isLoading} onRefresh={() => {
+                fetchMyBooks()
+            }} />
+        } style={styles.container}>
             <Flex direction='row'>
                 <Button width='50%' size='lg' variant='outline' onPress={() => {
                     navigation.navigate('SwapRequest')
@@ -35,35 +128,17 @@ const MyBooksPage = ({ navigation }) => {
                 <Heading fontSize="xl" p="4" pb="3">
                     My Books
                 </Heading>
-                <FlatList data={myBooks} renderItem={({
-                    item
-                }) => <Box marginBottom={4} marginRight={1}>
-                        <HStack justifyContent="space-between">
-                            <Image rounded='lg' style={styles.imageCover} source={item.image} alt='image' />
-                            <VStack justifyContent='space-between' pl={2} width='80%' minHeight={100}>
-                                <Text color="coolGray.800" bold>
-                                    {item.title}
-                                </Text>
-                                <Text fontSize="xs" _light={{
-                                    color: "violet.500"
-                                }} fontWeight="500">
-                                    by {item.authors.join(", ")}.
-                                </Text>
-                                <Text fontSize="xs" color="coolGray.800" alignSelf="flex-start">
-                                    Courses: {item.courses}
-                                </Text>
-                                <Button onPress={() => {
-                                    navigation.navigate('SwapOffer')
-                                }}>View Offers for this book</Button>
-                                <HStack width='100%'>
-                                    <Button width='50%' variant='outline' onPress={() => console.log("hello world")}>Update</Button>
-                                    <Button colorScheme="secondary" width='50%' variant='outline' onPress={() => console.log("hello world")}>Delete</Button>
-                                </HStack>
-                            </VStack>
-                        </HStack>
-                    </Box>} keyExtractor={item => item.id} />
-            </Box>
-        </View>
+                {isLoading ? (
+                    <Spinner size="lg" />
+                ) : (
+                    <FlatList data={books} renderItem={
+                        ({
+                            item
+                        }) => <RenderBookItem deleteBook={deleteBook} item={item} navigation={navigation} />} keyExtractor={item => item.book_id} />
+                )}
+
+            </Box >
+        </ScrollView >
     );
 }
 

@@ -1,34 +1,30 @@
 import { Button, FormControl, HStack, Heading, Input, Stack, Text, TextArea, VStack } from 'native-base';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
+import { API_URL } from '../constants/api';
+import axios from 'axios';
 
 
 function SwapScheduleForm({ navigation }) {
     const [formData, setData] = React.useState({});
     const [errors, setErrors] = React.useState({});
 
-    const validate = () => {
-        if (formData.name === undefined) {
-            setErrors({
-                ...errors,
-                name: 'Name is required'
-            });
-            return false;
-        } else if (formData.name.length < 3) {
-            setErrors({
-                ...errors,
-                name: 'Name is too short'
-            });
-            return false;
-        }
-
-        return true;
-    };
-
     const onSubmit = () => {
-        // validate() ? console.log('Submitted') : console.log('Validation Failed');
         navigation.navigate('SignIn')
     };
+
+    const scheduleSwap = async () => {
+        try {
+            const url = `${API_URL}/my_books`
+            const response = await axios.post(url, {
+                book_id: '',
+                receiver_id: ''
+            });
+            console.log('scheduled successfully',response.data)
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    }
 
     return <VStack width="100%">
         <FormControl isRequired isInvalid={'address' in errors}>

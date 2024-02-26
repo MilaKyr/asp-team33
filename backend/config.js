@@ -34,4 +34,11 @@ config.emailTransporter.auth = {};
 config.emailTransporter.auth.user = process.env.EMAIL_AUTH_USER || "REPLACE-WITH-YOUR-ALIAS@YOURDOMAIN.COM";
 config.emailTransporter.auth.pass = process.env.EMAIL_AUTH_PASSWORD || "REPLACE-WITH-YOUR-GENERATED-PASSWORD";
 
+
+// image resizing
+config.imageResize = {};
+config.imageResize.height = parseInt(process.env.IMAGE_RESIZE_HEIGHT) || 350;
+config.imageResize.width = parseInt(process.env.IMAGE_RESIZE_WIDTH) || 465;
+config.imageResize.fit = process.env.IMAGE_RESIZE_FIT || 'contain';
+
 module.exports = config;

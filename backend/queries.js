@@ -125,7 +125,8 @@ const MyBooks = async (request, response) => {
         " FROM (SELECT book_id, user_id FROM userbook WHERE user_id = $1) as user_books \
         LEFT JOIN book ON book.id = user_books.book_id " + fullBookJoins;
         const result = await getPool().query(statement, [user_id]);
-        response.status(200).json(result.rows);
+        var books = utils.combine_books_with_authors(result.rows)
+        response.status(200).json(books);
     } catch (err) {
         console.error(err);
         return response.status(404).send();

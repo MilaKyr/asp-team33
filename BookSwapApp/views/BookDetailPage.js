@@ -69,15 +69,15 @@ const BookDetailPage = ({ navigation, route }) => {
                             {item.title}
                         </Text>
 
-                        <Text fontSize="xs" _light={{
+                        <Text marginY={2} fontSize="xs" _light={{
                             color: "violet.500"
                         }} fontWeight="500">
                             by {item?.authors?.join(", ")}.
                         </Text>
-                        <Text fontSize="xs" color="coolGray.800" alignSelf="flex-start">
+                        <Text marginY={1} fontSize="xs" color="coolGray.800" alignSelf="flex-start">
                             Courses: {item.course}
                         </Text>
-                        <Text fontSize="xs" fontWeight="500">
+                        <Text marginY={1} fontSize="xs" fontWeight="500">
                             Uploaded By: {item.name} {item.surname}
                         </Text>
                         <Text marginY={3} width='100%' color="coolGray.800">

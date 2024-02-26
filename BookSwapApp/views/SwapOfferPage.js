@@ -102,16 +102,24 @@ const SwapOfferPage = ({ route }) => {
                     item
                 }) => <Box marginBottom={4} marginRight={1}>
                         <HStack justifyContent="space-between">
-                            <Image rounded='lg' style={styles.imageCover} source={item.image} alt='image' />
-                            <VStack justifyContent='space-between' pl={2} width='80%' minHeight={100}>
-                                <Text color="coolGray.800" bold>
-                                    User: {item.sender_user_id}
-                                </Text>
-                                <Badge colorScheme={OFFER_TO_SCHEME_MAPPER[OFFER_STATUS[item.status_id]]}>{OFFER_STATUS[item.status_id]}</Badge>
+                            <VStack justifyContent='space-between' pl={2} width='100%' minHeight={100}>
+
+                                <Badge marginTop={2} width={'40%'} rounded='3xl' variant='solid' colorScheme={OFFER_TO_SCHEME_MAPPER[OFFER_STATUS[item.status_id]]}>{OFFER_STATUS[item.status_id]}</Badge>
+
+
+                                <Heading marginY={2} size='sm' color="coolGray.800" bold>
+                                    {`${item.receiver_name} ${item.receiver_surname}`}
+                                </Heading>
+                                <Heading marginY={2} size='xs' color="blue.800" bold>
+                                    {`${item.receiver_city}, ${item.receiver_country}`}
+                                </Heading>
+
+
                                 <Text fontSize="xs" color="coolGray.800" alignSelf="flex-start">
                                     Requested: {formatDistance(item.request_date, new Date(), { addSuffix: true })}
                                 </Text>
-                                <HStack width='100%'>
+                                
+                                <HStack>
                                     <Button isLoading={isAcceptLoading} width='50%' variant='outline' onPress={() => {
                                         acceptOffer(item.id)
                                     }}>Accept</Button>

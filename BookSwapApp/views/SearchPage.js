@@ -6,7 +6,7 @@ import React, { useState } from 'react';
 import { API_URL } from '../constants/api';
 
 
-const RenderItem = ({item, navigation}) => {
+const RenderItem = ({ item, navigation }) => {
     const [image, setImage] = React.useState(null);
 
     const fetchImage = async () => {
@@ -97,22 +97,24 @@ const SearchPage = ({ navigation }) => {
                 }} size="2xl" enterKeyHint='search' placeholder="Search for interested books" variant="rounded" width="100%" fontSize="14" InputLeftElement={<Icon ml="2" size="4" color="gray.400" as={<Ionicons name="search" />} />} />
             </View>
             <Box style={styles.subsets}>
-                <ScrollView minH='10%' horizontal={true}>
-                    <Button onPress={() => {
-                        filterLocation('');
-                    }} height='50%' size='xs' variant='outline' rounded='2xl' marginX={2} marginY={2} >Clear Filter</Button>
-                    {locations.map(location => (
+                <View>
+                    <ScrollView height={70} maxHeight={80} horizontal={true}>
                         <Button onPress={() => {
-                            filterLocation(location.country);
-                        }} height='50%' size='xs' rounded='2xl' marginX={2} marginY={2} >{location.country}</Button>
-                    ))}
-                </ScrollView>
+                            filterLocation('');
+                        }} height='50%' size='xs' variant='outline' rounded='2xl' marginX={2} marginY={2} >Clear Filter</Button>
+                        {locations.map(location => (
+                            <Button onPress={() => {
+                                filterLocation(location.country);
+                            }} height='50%' size='xs' rounded='2xl' marginX={2} marginY={2} >{location.country}</Button>
+                        ))}
+                    </ScrollView>
+                </View>
                 <Heading fontSize="xl" p="4" pb="3">
                     Top Results
                 </Heading>
                 <FlatList data={bookResults} renderItem={({
                     item
-                }) => <RenderItem item={item} navigation={navigation} />} keyExtractor={item => item.id} />
+                }) => <RenderItem key={item.id} item={item} navigation={navigation} />} keyExtractor={item => item.id} />
             </Box>
         </View>
     );

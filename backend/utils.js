@@ -72,5 +72,4 @@ module.exports = {
     combine_books_with_authors,
     insert_data,
     send_email,
-    update_data,
 };

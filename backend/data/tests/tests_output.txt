@@ -1,0 +1,98 @@
+
+> backend@1.0.0 test
+> mocha --timeout 100000 --exit
+
+App running on port 4000.
+
+
+  Books
+dropped all data
+starting to fill database ...
+    ✔ it should not authorize get specific book
+    ✔ it should not authorize to post new book
+    ✔ it should not authorize to update book
+    ✔ it should not authorize to delete book
+    /GET my_books 
+      ✔ it should not authorize get users books
+      ✔ it should GET all specific users books
+    /GET my_book 
+      ✔ it should GET book by bookId
+    /POST add_book 
+      ✔ it should POST new book
+    /PUT update_book
+      ✔ it should update title
+      ✔ it should update year
+      ✔ it should update description
+      ✔ it should update ICBN 10
+      ✔ it should update edition
+      ✔ it should update course
+      ✔ it should update authors (62ms)
+    /DELETE my_book 
+      ✔ it should delete specified book
+
+  Image
+dropped all data
+starting to fill database ...
+    Add new image 
+      ✔ it should get current image for the book
+      ✔ it should not authorize set new image
+      ✔ it should set new image
+      ✔ it should check the new image
+
+  Search
+dropped all data
+starting to fill database ...
+    /GET search 
+      ✔ it should GET all books in search
+    /GET search by title (lowercase) 
+      ✔ it should GET books by title
+    /GET search by title (CamelCase) 
+      ✔ it should GET books by title
+    /GET search by course_id
+      ✔ it should GET books by courses
+    /GET search by location
+      ✔ it should GET books by country
+    /GET search by authors
+      ✔ it should GET books by unknown authors name
+      ✔ it should GET books by authors name
+      ✔ it should GET books by authors surname
+
+  SingUp
+    /POST sing_up 
+      ✔ it should create new user
+
+  Swaps
+dropped all data
+starting to fill database ...
+    /GET my_swaps 
+      ✔ it should not authorize to get swaps
+      ✔ it should GET all swaps
+    /PUT update_swap 
+      ✔ it should not authorize to update swap
+      ✔ it should update swap status (60ms)
+    /POST schedule_swap 
+      ✔ it should not authorize to post swap
+      ✔ it should create new swap (57ms)
+    /GET sent_swaps
+      ✔ it should not authorize to get sent swap
+      ✔ it should check number of sent swaps
+      ✔ it should delete swap
+      ✔ it should check updated number of sent swap
+
+  Unauthorized GET endpoints
+dropped all data
+starting to fill database ...
+    /GET bookShowcase
+      ✔ it should GET all the books
+    /GET courses 
+      ✔ it should GET all the courses
+    /GET book_types 
+      ✔ it should GET all the book types
+    /GET request_statuses 
+      ✔ it should GET all the request statuses
+    /GET locations 
+      ✔ it should GET all the cities and countries available in the DB
+
+
+  44 passing (2s)
+

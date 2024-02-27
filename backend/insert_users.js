@@ -208,4 +208,11 @@ async function main() {
     }
 }
 
-main();
+
+
+module.exports = {
+    main,
+    flush_db,
+    authors,
+}
+

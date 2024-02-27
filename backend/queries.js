@@ -8,9 +8,9 @@ const AVAILABLE_FILTERS = config.get('search_filters');
 
 var fullBookSelect = "SELECT appuser.id AS user_id, appuser.name, appuser.surname, \
 appuser.city, appuser.country, \
-book.id AS book_id, book.title, book.description, book.edition, book.icbn_10, \
+book.id AS book_id, book.title, book.description, book.edition, book.icbn_10, book.year, \
 booktype.id as book_type_id, booktype.name as book_type, \
-author.name||' '||author.surname AS author, course.name AS course ";
+author.name||' '||author.surname AS author, course.id AS course_id, course.name AS course ";
 
 var fullBookJoins = " LEFT JOIN userbook ON userbook.book_id = book.id \
 LEFT JOIN appuser ON appuser.id = userbook.user_id \
@@ -140,7 +140,8 @@ const MyBook = async (request, response) => {
         const book_id = request.params.id;
         const user_id = request.session.username;
         const result = await getPool().query(statement, [book_id]);
-        response.status(200).json(result.rows[0]);
+        var book = utils.combine_books_with_authors(result.rows)[0];
+        response.status(200).json(book);
     } catch (err) {
         console.error(err);
         return response.status(404).send();
@@ -206,7 +207,7 @@ const updateBook = async (request, response) => {
             course_id, authors } = request.body;
         await getPool().query("UPDATE book SET title = $1, description = $2, icbn_10 = $3, \
         year = $4, edition = $5, type_id = $6 WHERE id = $7", [title, description, icbn_10, year, edition, book_type_id, book_id]);
-        await getPool().query("UPDATE bookcourse SET course_id = $1 WHERE id = $2", [course_id, book_id]);
+        await getPool().query("UPDATE bookcourse SET course_id = $1 WHERE book_id = $2", [course_id, book_id]);
         var values = []
         for (author of authors) {
             values.push({ name: author.name, surname: author.surname });
@@ -247,9 +248,9 @@ const ScheduleSwap = async (request, response) => {
         const status = await getPool().query("SELECT id FROM status WHERE name = 'pending'");
         const status_id = status.rows[0].id;
         const statement = "INSERT INTO request (receiver_user_id, sender_user_id, book_id, status_id, request_date) \
-         VALUES ($1, $2, $3, $4, $5)";
-        await getPool().query(statement, [receiver_id, user_id, book_id, status_id, now]);
-        return response.status(200).send();
+         VALUES ($1, $2, $3, $4, $5) RETURNING id";
+        let result = await getPool().query(statement, [receiver_id, user_id, book_id, status_id, now]);
+        return response.status(200).json(result.rows[0].id);
     } catch (err) {
         console.error(err);
         return response.status(404).send();
@@ -289,7 +290,9 @@ const addImage = async (request, response) => {
         return response.status(400).send();
     }
     try {
-        const statement = 'INSERT INTO bookimage (user_id, book_id, image) VALUES ($1, $2, $3 )';
+        const statement = 'INSERT INTO bookimage (user_id, book_id, image) VALUES ($1, $2, $3 )\
+        ON CONFLICT (user_id, book_id) \
+        DO UPDATE SET image = $3';
         const book_id = parseInt(request.params.id);
         const user_id = request.session.username;
         const resizedBuffer = await sharp(request.file.buffer)
@@ -410,6 +413,19 @@ const sentSwaps = async (request, response) => {
     }
 }
 
+const MySwap = async (request, response) => {
+    if (!request.session.loggedin) return response.status(401).send();
+    try {
+        const swap_id = parseInt(request.params.id);
+        const statement = swapsSelect + " WHERE request.id = $1";
+        const results = await getPool().query(statement, [swap_id]);
+        return response.status(200).json(results.rows[0]);
+    } catch (err) {
+        console.error(err);
+        return response.status(500).send();
+    }
+}
+
 
 module.exports = {
     bookShowcase,
@@ -432,4 +448,5 @@ module.exports = {
     getImage,
     RequestStatuses,
     sentSwaps,
+    MySwap,
 };

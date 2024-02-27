@@ -16,8 +16,7 @@ describe('Unauthorized GET endpoints', () => {
 
   describe('/GET bookShowcase', () => {
       it('it should GET all the books', async function() {
-        let res = await chai.request(server)
-            .get('/api/').send();
+        let res = await chai.request(server).get('/api/').send();
         expect(res.status).to.equal(200);
         const body = res.body;
         expect(body).to.be.a('array');
@@ -27,8 +26,7 @@ describe('Unauthorized GET endpoints', () => {
 
   describe('/GET courses ', () => {
     it('it should GET all the courses', async function() {
-        let res = await chai.request(server)
-            .get('/api/courses').send();
+        let res = await chai.request(server).get('/api/courses').send();
         expect(res.status).to.equal(200);
         const body = res.body;
         expect(body).to.be.a('array');
@@ -38,8 +36,7 @@ describe('Unauthorized GET endpoints', () => {
 
     describe('/GET book_types ', () => {
         it('it should GET all the book types', async function() {
-            let res = await chai.request(server)
-              .get('/api/book_types').send();
+            let res = await chai.request(server).get('/api/book_types').send();
             expect(res.status).to.equal(200);
             const body = res.body;
             expect(body).to.be.a('array');
@@ -49,8 +46,7 @@ describe('Unauthorized GET endpoints', () => {
 
     describe('/GET request_statuses ', () => {
         it('it should GET all the request statuses', async function() {
-            let res = await chai.request(server)
-              .get('/api/request_statuses').send();
+            let res = await chai.request(server).get('/api/request_statuses').send();
             expect(res.status).to.equal(200);
             const body = res.body;
             expect(body).to.be.a('array');
@@ -61,8 +57,7 @@ describe('Unauthorized GET endpoints', () => {
 
     describe('/GET locations ', () => {
         it('it should GET all the cities and countries available in the DB', async function() {
-            let res = await chai.request(server)
-              .get('/api/locations').send();
+            let res = await chai.request(server).get('/api/locations').send();
             expect(res.status).to.equal(200);
             const body = res.body;
             expect(body).to.be.a('array');

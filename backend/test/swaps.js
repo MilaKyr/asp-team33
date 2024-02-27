@@ -76,6 +76,16 @@ describe('Swaps', () => {
             expect(updated_res.status).to.equal(200);
             expect(updated_res.body.status_id).to.equal(newStatusId.id);
         });
+
+        it('it should get error with unknown query', async function() {
+            let res = await agent.put('/api/update_swap/' + swapId).send({});
+            expect(res.status).to.equal(404);   
+        });
+
+        it('it should get error with unknown swapId', async function() {
+            let res = await agent.put('/api/update_swap/0').send({});
+            expect(res.status).to.equal(404);   
+        });
     });
 
     describe('/POST schedule_swap ', () => {
@@ -103,6 +113,11 @@ describe('Swaps', () => {
             expect(updated_res.body.receiver_user_id).to.equal(requestedBook.user_id);
             expect(updated_res.body.book_id).to.equal(requestedBook.book_id);
         });
+
+        it('it should get error with unknown query', async function() {
+            let res = await agent.post('/api/schedule_swap').send({});
+            expect(res.status).to.equal(404);   
+        });
     });
 
     describe('/GET sent_swaps', () => {
@@ -128,6 +143,11 @@ describe('Swaps', () => {
             expect(res.status).to.equal(200);
             expect(res.body).to.be.a("array");
             expect(res.body).to.have.lengthOf(0);
+        });
+
+        it('it should get error with unknown bookId', async function() {
+            let res = await agent.put('/api/update_book/0').send({});
+            expect(res.status).to.equal(404);   
         });
     });
 

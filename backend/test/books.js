@@ -49,12 +49,12 @@ describe('Books', () => {
     });
 
 
-    it('it should not authorize get specific book', async function() {
-        let res = await chai.request(server).get('/api/my_book/' + bookId).send();
-        expect(res.status).to.equal(401);   
-    });
-
     describe('/GET my_book ', () => {
+        it('it should not authorize get specific book', async function() {
+            let res = await chai.request(server).get('/api/my_book/' + bookId).send();
+            expect(res.status).to.equal(401);   
+        });
+
         it('it should GET book by bookId', async function() {
             let res = await agent.get('/api/my_book/' + bookId).send();
             expect(res.status).to.equal(200);
@@ -67,14 +67,17 @@ describe('Books', () => {
             expect(body.authors).to.be.a('array');
             expect(body.authors).to.have.lengthOf(3);
         });
+
+
     });
 
-    it('it should not authorize to post new book', async function() {
-        let res = await chai.request(server).post('/api/add_book/').send({});
-        expect(res.status).to.equal(401);   
-    });
 
     describe('/POST add_book ', () => {
+        it('it should not authorize to post new book', async function() {
+            let res = await chai.request(server).post('/api/add_book/').send({});
+            expect(res.status).to.equal(401);   
+        });
+
         it('it should POST new book', async function() {
             let book_type_res = await chai.request(server).get('/api/book_types').send();
             let courses_res = await chai.request(server).get('/api/courses').send();
@@ -98,14 +101,19 @@ describe('Books', () => {
             expect(all_books_res.body).to.be.a('array');
             expect(all_books_res.body).to.have.lengthOf(bookCnt + 1);
         });
-    });
 
-    it('it should not authorize to update book', async function() {
-        let res = await chai.request(server).put('/api/update_book/' + bookId).send({});
-        expect(res.status).to.equal(401);   
+        it('it should get error with empty params', async function() {
+            let res = await agent.post('/api/add_book/').send({});
+            expect(res.status).to.equal(404);   
+        });
     });
 
     describe('/PUT update_book', () => {
+        it('it should not authorize to update book', async function() {
+            let res = await chai.request(server).put('/api/update_book/' + bookId).send({});
+            expect(res.status).to.equal(401);   
+        });
+
         it('it should update title', async function() {
             var newBookTitle = "New updated title";
             let existing_book_res = await agent.get('/api/my_book/' + bookId).send();
@@ -263,17 +271,29 @@ describe('Books', () => {
             expect(updated_book_res.body.authors).to.have.lengthOf(3);
             expect(updated_book_res.body.authors).to.have.all.members(["John Doe", "Janette Doe", "Lui Test"]);
         });
+
+        it('it should get error with empty params', async function() {
+            let res = await agent.put('/api/update_book/' + bookId).send({});
+            expect(res.status).to.equal(404);   
+        });
     });
 
-    it('it should not authorize to delete book', async function() {
-        let res = await chai.request(server).delete('/api/my_book/' + bookId).send();
-        expect(res.status).to.equal(401);   
-    });
 
     describe('/DELETE my_book ', () => {
+
+        it('it should not authorize to delete book', async function() {
+            let res = await chai.request(server).delete('/api/my_book/' + bookId).send();
+            expect(res.status).to.equal(401);   
+        });
+        
         it('it should delete specified book', async function() {
             let res = await agent.delete('/api/my_book/' + bookId).send();
             expect(res.status).to.equal(200);
+        });
+
+        it('it should get error with unknown bookId', async function() {
+            let res = await agent.delete('/api/my_book/abc').send({});
+            expect(res.status).to.equal(404);   
         });
     });
 });

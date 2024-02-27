@@ -37,8 +37,7 @@ const bookShowcase = async (request, response) => {
         var books = utils.combine_books_with_authors(results.rows);
         response.status(200).json(books);
     } catch (err) {
-        console.error(err);
-        return response.status(500).send();
+        return response.status(500).send(err);
     }
 };
 
@@ -71,8 +70,7 @@ const Search = async (request, response) => {
             return response.status(200).json(books);
         }
     } catch (err) {
-        console.error(err);
-        return response.status(500).send();
+        return response.status(500).send(err);
     }
 };
 
@@ -87,7 +85,7 @@ const SignIn = async (request, response) => {
         var splitted = user.rows[0].password_hash.split(",");
         var decrypted_password = crypto.decrypt(splitted[0], splitted[1], splitted[2]);
         if (password != decrypted_password) {
-            return response.status(401).send();
+            return response.status(404).send();
         }
         // otherwise assign session'data
         var user_id = user.rows[0].id;
@@ -95,8 +93,7 @@ const SignIn = async (request, response) => {
         request.session.username = user_id;
         return response.status(200).json(user_id);
     } catch (err) {
-        console.error(err);
-        return response.status(500).send();
+        return response.status(500).send(err);
     }
 };
 
@@ -112,8 +109,7 @@ const SignUp = async (request, response) => {
         request.session.username = user_id;
         return response.status(200).json(user_id);
     } catch (err) {
-        console.error(err);
-        return response.status(500).send();
+        return response.status(404).send(err);
     }
 };
 
@@ -128,8 +124,7 @@ const MyBooks = async (request, response) => {
         var books = utils.combine_books_with_authors(result.rows)
         response.status(200).json(books);
     } catch (err) {
-        console.error(err);
-        return response.status(404).send();
+        return response.status(500).send(err);
     }
 };
 
@@ -143,8 +138,7 @@ const MyBook = async (request, response) => {
         var book = utils.combine_books_with_authors(result.rows)[0];
         response.status(200).json(book);
     } catch (err) {
-        console.error(err);
-        return response.status(404).send();
+        return response.status(404).send(err);
     }
 };
 
@@ -194,8 +188,7 @@ const addBook = async (request, response) => {
         await insertAuthorModel(request, book_id);
         response.status(200).json(book_id);
     } catch (err) {
-        console.error(err);
-        return response.status(404).send();
+        return response.status(404).send(err);
     }
 }
 
@@ -221,8 +214,7 @@ const updateBook = async (request, response) => {
         await getPool().query(query);
         response.status(200).send();
     } catch (err) {
-        console.error(err);
-        return response.status(404).send();
+        return response.status(404).send(err);
     }
 };
 
@@ -234,8 +226,7 @@ const Swaps = async (request, response) => {
         const results = await getPool().query(statement, [user_id]);
         return response.status(200).json(results.rows);
     } catch (err) {
-        console.error(err);
-        return response.status(500).send();
+        return response.status(500).send(err);
     }
 }
 
@@ -252,8 +243,7 @@ const ScheduleSwap = async (request, response) => {
         let result = await getPool().query(statement, [receiver_id, user_id, book_id, status_id, now]);
         return response.status(200).json(result.rows[0].id);
     } catch (err) {
-        console.error(err);
-        return response.status(404).send();
+        return response.status(404).send(err);
     }
 }
 
@@ -266,8 +256,7 @@ const DeleteBook = async (request, response) => {
         await getPool().query(statement, [user_id, book_id]);
         return response.status(200).send();
     } catch (err) {
-        console.error(err);
-        return response.status(404).send();
+        return response.status(404).send(err);
     }
 };
 
@@ -279,8 +268,7 @@ const DeleteSwap = async (request, response,) => {
         await getPool().query(statement, [swap_id]);
         return response.status(200).send();
     } catch (err) {
-        console.error(err);
-        return response.status(404).send();
+        return response.status(404).send(err);
     }
 }
 
@@ -302,8 +290,7 @@ const addImage = async (request, response) => {
         await getPool().query(statement, [user_id, book_id, resizedBuffer]);
         return response.status(201).send();
     } catch (err) {
-        console.error(err);
-        return response.status(404).send();
+        return response.status(404).send(err);
     }
 }
 
@@ -316,7 +303,6 @@ const getImage = async (request, response) => {
         var encodedBuffer = res.rows[0].image;
         return response.status(200).json(encodedBuffer);
     } catch (err) {
-        console.error(err);
         return response.status(404).send();
     }
 }
@@ -347,11 +333,9 @@ const UpdateSwap = async (request, response) => {
             }
             return response.status(200).send();
         } catch (err) {
-            console.error(err);
             return response.status(404).send();
         }
     } catch (err) {
-        console.error(err);
         return response.status(500).send();
     }
 }
@@ -362,7 +346,6 @@ const Locations = async (request, response) => {
         const results = await getPool().query(statement);
         return response.status(200).json(results.rows);
     } catch (err) {
-        console.error(err);
         return response.status(500).send();
     }
 }
@@ -373,7 +356,6 @@ const Courses = async (request, response) => {
         const results = await getPool().query(statement);
         return response.status(200).json(results.rows);
     } catch (err) {
-        console.error(err);
         return response.status(500).send();
     }
 }
@@ -384,7 +366,6 @@ const BookTypes = async (request, response) => {
         const results = await getPool().query(statement);
         return response.status(200).json(results.rows);
     } catch (err) {
-        console.error(err);
         return response.status(500).send();
     }
 }
@@ -395,7 +376,6 @@ const RequestStatuses = async (request, response) => {
         const results = await getPool().query(statement);
         return response.status(200).json(results.rows);
     } catch (err) {
-        console.error(err);
         return response.status(500).send();
     }
 }
@@ -408,7 +388,6 @@ const sentSwaps = async (request, response) => {
         const results = await getPool().query(statement, [user_id]);
         return response.status(200).json(results.rows);
     } catch (err) {
-        console.error(err);
         return response.status(500).send();
     }
 }
@@ -421,7 +400,6 @@ const MySwap = async (request, response) => {
         const results = await getPool().query(statement, [swap_id]);
         return response.status(200).json(results.rows[0]);
     } catch (err) {
-        console.error(err);
         return response.status(500).send();
     }
 }

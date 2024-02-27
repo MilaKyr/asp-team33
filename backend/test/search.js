@@ -20,6 +20,11 @@ describe('Search', () => {
             expect(body).to.be.a('array');
             expect(body).to.have.lengthOf(7);
         });
+
+        it('it should get error with unknown query', async function() {
+            let res = await chai.request(server).get('/api/search').query({uk: "uk"}).send();
+            expect(res.status).to.equal(404);   
+        });
     });
 
     describe('/GET search by title (lowercase) ', () => {
@@ -94,5 +99,7 @@ describe('Search', () => {
         });
 
     });
+
+    
 
 });

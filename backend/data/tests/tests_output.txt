@@ -96,3 +96,121 @@ starting to fill database ...
 
   44 passing (2s)
 
+
+> backend@1.0.0 test
+> mocha --timeout 100000 --exit
+
+App running on port 4000.
+
+
+  Books
+dropped all data
+starting to fill database ...
+    /GET my_books 
+      ✔ it should not authorize get users books
+      ✔ it should GET all specific users books
+    /GET my_book 
+      ✔ it should not authorize get specific book
+      ✔ it should GET book by bookId
+    /POST add_book 
+      ✔ it should not authorize to post new book
+      ✔ it should POST new book
+      ✔ it should get error with empty params
+    /PUT update_book
+      ✔ it should not authorize to update book
+      ✔ it should update title (42ms)
+      ✔ it should update year (55ms)
+      ✔ it should update description (56ms)
+      ✔ it should update ICBN 10 (49ms)
+      ✔ it should update edition
+      ✔ it should update course (44ms)
+      ✔ it should update authors (59ms)
+      ✔ it should get error with empty params
+    /DELETE my_book 
+      ✔ it should not authorize to delete book
+      ✔ it should delete specified book
+      ✔ it should get error with unknown bookId
+
+  Image
+dropped all data
+starting to fill database ...
+    Get current image 
+      ✔ it should get current image for the book
+      ✔ it should get error with unknown bookId
+      ✔ it should get error with unknown useId
+    Add new image 
+      ✔ it should not authorize set new image
+      ✔ it should set new image
+      ✔ it should check the new image (45ms)
+      ✔ it should get error with no file
+      ✔ it should get error with unknown bookId
+      ✔ it should get error with unknown useId
+
+  Search
+dropped all data
+starting to fill database ...
+    /GET search 
+      ✔ it should GET all books in search
+      ✔ it should get error with unknown query
+    /GET search by title (lowercase) 
+      ✔ it should GET books by title
+    /GET search by title (CamelCase) 
+      ✔ it should GET books by title
+    /GET search by course_id
+      ✔ it should GET books by courses
+    /GET search by location
+      ✔ it should GET books by country
+    /GET search by authors
+      ✔ it should GET books by unknown authors name
+      ✔ it should GET books by authors name
+      ✔ it should GET books by authors surname
+
+  Swaps
+dropped all data
+starting to fill database ...
+    /GET my_swaps 
+      ✔ it should not authorize to get swaps
+      ✔ it should GET all swaps
+    /PUT update_swap 
+      ✔ it should not authorize to update swap
+      ✔ it should update swap status
+      ✔ it should get error with unknown query
+      ✔ it should get error with unknown swapId
+    /POST schedule_swap 
+      ✔ it should not authorize to post swap
+      ✔ it should create new swap
+      ✔ it should get error with unknown query
+    /GET sent_swaps
+      ✔ it should not authorize to get sent swap
+      ✔ it should check number of sent swaps
+      ✔ it should delete swap
+      ✔ it should check updated number of sent swap
+      ✔ it should get error with unknown bookId
+
+  Unauthorized GET endpoints
+dropped all data
+starting to fill database ...
+    /GET bookShowcase
+      ✔ it should GET all the books
+    /GET courses 
+      ✔ it should GET all the courses
+    /GET book_types 
+      ✔ it should GET all the book types
+    /GET request_statuses 
+      ✔ it should GET all the request statuses
+    /GET locations 
+      ✔ it should GET all the cities and countries available in the DB
+
+  User
+    /POST sing_up 
+      ✔ it should create new user
+      ✔ it should get error with empty body
+    /POST sing_in 
+dropped all data
+starting to fill database ...
+      ✔ it should get error with empty body
+      ✔ it should get error with wrong body
+
+
+  60 passing (3s)
+

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha --timeout 100000 --exit",
-    "coverage": "nyc  --reporter=text npm test",
+    "coverage": "nyc --reporter=html --reporter=text npm test --reporter-dir=data/tests",
     "swagger-autogen": "node ./docs/swagger.js",
     "seed-db": "run-func insert_users.js main",
     "start": "node index.js"
@@ -30,6 +30,7 @@
     "pg-promise": "^5.9.7",
     "run-func": "^3.0.0",
     "sharp": "^0.33.2",
+    "swagger-autogen": "^2.23.7",
     "swagger-ui-express": "^5.0.0"
   },
   "devDependencies": {

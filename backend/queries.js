@@ -125,7 +125,8 @@ const MyBooks = async (request, response) => {
         " FROM (SELECT book_id, user_id FROM userbook WHERE user_id = $1) as user_books \
         LEFT JOIN book ON book.id = user_books.book_id " + fullBookJoins;
         const result = await getPool().query(statement, [user_id]);
-        response.status(200).json(result.rows);
+        var books = utils.combine_books_with_authors(result.rows)
+        response.status(200).json(books);
     } catch (err) {
         console.error(err);
         return response.status(404).send();
@@ -213,8 +214,9 @@ const updateBook = async (request, response) => {
         var query = utils.insert_data("author", ["name", "surname"], values,
             " ON CONFLICT (name, surname) DO UPDATE SET name = EXCLUDED.name, surname = EXCLUDED.surname RETURNING id");
         const res = await getPool().query(query);
+        await getPool().query("DELETE FROM bookauthor where book_id = $1", [book_id]);
         const author_ids = values.map((_, index) => ({ book_id: parseInt(book_id), author_id: res.rows[index].id }));
-        var query = utils.update_data("bookauthor", ["?book_id", "author_id"], author_ids, "book_id");
+        var query = utils.insert_data("bookauthor", ["book_id", "author_id"], author_ids);
         await getPool().query(query);
         response.status(200).send();
     } catch (err) {

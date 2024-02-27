@@ -8,7 +8,7 @@
     "host": "localhost",
     "database": "api",
     "password": "password",
-    "port": 5433
+    "port": 5432
   },
   "crypto_key": "RVRrt150sMijJktfIOyo7h0GoWZc84N4KLw9FhGIRhU=",
   "search_filters": [

@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha --timeout 100000 --exit",
+    "coverage": "nyc --reporter=html --reporter=text npm test --reporter-dir=data/tests",
     "swagger-autogen": "node ./docs/swagger.js",
-    "seed-db": "node insert_users.js",
+    "seed-db": "run-func insert_users.js main",
     "start": "node index.js"
   },
   "author": "",
@@ -27,7 +28,16 @@
     "pg-hstore": "^2.3.4",
     "pg-pool": "3.6.1",
     "pg-promise": "^5.9.7",
+    "run-func": "^3.0.0",
     "sharp": "^0.33.2",
+    "swagger-autogen": "^2.23.7",
     "swagger-ui-express": "^5.0.0"
+  },
+  "devDependencies": {
+    "chai": "4.4.1",
+    "chai-http": "^4.4.0",
+    "mocha": "^10.3.0",
+    "nyc": "^15.1.0",
+    "resemblejs": "^5.0.0"
   }
 }

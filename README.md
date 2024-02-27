@@ -25,6 +25,23 @@ To enter PostgresQL within the docker, run:
 docker exec -it local-postgres psql -U main -d api
 ```
 
+### Prod
+Deployed backend: https://asp-team33.onrender.com
+
+### Tests
+To run tests:
+```bash
+npm test
+```
+Test infor also can be found in `data/tests/tests_output.txt`
+
+
+To check test coverage:
+```bash
+npm run coverage
+```
+
+
 To start the React Native app run:
 ```bash
 cd BookSwapApp

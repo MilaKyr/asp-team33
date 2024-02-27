@@ -27,6 +27,9 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
           }
         }
       }
@@ -34,19 +37,9 @@
     "/search": {
       "get": {
         "description": "",
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/my_book": {
-      "get": {
-        "description": "",
         "parameters": [
           {
-            "name": "book_id",
+            "name": "constructor",
             "in": "query",
             "type": "string"
           }
@@ -54,15 +47,92 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
           }
         }
-      },
-      "delete": {
+      }
+    },
+    "/courses": {
+      "get": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/book_types": {
+      "get": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/request_statuses": {
+      "get": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/locations": {
+      "get": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/my_books": {
+      "get": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/my_book/{id}": {
+      "get": {
         "description": "",
         "parameters": [
           {
-            "name": "book_id",
-            "in": "query",
+            "name": "id",
+            "in": "path",
+            "required": true,
             "type": "string"
           }
         ],
@@ -72,49 +142,37 @@
           },
           "401": {
             "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
           }
         }
-      }
-    },
-    "/new_book": {
-      "post": {
+      },
+      "delete": {
         "description": "",
         "parameters": [
           {
-            "name": "book_type",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "title",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "description",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "year",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "edition",
-            "in": "query",
+            "name": "id",
+            "in": "path",
+            "required": true,
             "type": "string"
           }
         ],
         "responses": {
-          "201": {
-            "description": "Created"
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
           }
         }
       }
     },
-    "/edit_book": {
-      "put": {
+    "/add_book": {
+      "post": {
         "description": "",
         "parameters": [
           {
@@ -123,25 +181,7 @@
             "schema": {
               "type": "object",
               "properties": {
-                "title": {
-                  "example": "any"
-                },
-                "authors": {
-                  "example": "any"
-                },
-                "year": {
-                  "example": "any"
-                },
-                "description": {
-                  "example": "any"
-                },
-                "edition": {
-                  "example": "any"
-                },
-                "icbn_10": {
-                  "example": "any"
-                },
-                "book_type": {
+                "course_id": {
                   "example": "any"
                 }
               }
@@ -151,6 +191,69 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/update_book/{id}": {
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "book_type_id": {
+                  "example": "any"
+                },
+                "title": {
+                  "example": "any"
+                },
+                "description": {
+                  "example": "any"
+                },
+                "icbn_10": {
+                  "example": "any"
+                },
+                "year": {
+                  "example": "any"
+                },
+                "edition": {
+                  "example": "any"
+                },
+                "course_id": {
+                  "example": "any"
+                },
+                "authors": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
           }
         }
       }
@@ -168,7 +271,55 @@
                 "email": {
                   "example": "any"
                 },
-                "password_hash": {
+                "password": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/sign_up": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "example": "any"
+                },
+                "password": {
+                  "example": "any"
+                },
+                "name": {
+                  "example": "any"
+                },
+                "surname": {
+                  "example": "any"
+                },
+                "city": {
+                  "example": "any"
+                },
+                "country": {
                   "example": "any"
                 }
               }
@@ -185,35 +336,18 @@
         }
       }
     },
-    "/sing_up": {
-      "post": {
+    "/my_swaps": {
+      "get": {
         "description": "",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "email": {
-                  "example": "any"
-                },
-                "password_hash": {
-                  "example": "any"
-                },
-                "name": {
-                  "example": "any"
-                },
-                "surname": {
-                  "example": "any"
-                }
-              }
-            }
-          }
-        ],
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
           }
         }
       }
@@ -235,6 +369,9 @@
           },
           "401": {
             "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
           }
         }
       },
@@ -251,6 +388,51 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/update_swap/{id}": {
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status_id": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
           }
         }
       }
@@ -258,9 +440,100 @@
     "/schedule_swap": {
       "post": {
         "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "receiver_id": {
+                  "example": "any"
+                },
+                "book_id": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/sent_swaps": {
+      "get": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/add_image/{id}": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/image": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "book_id",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
           }
         }
       }

@@ -49,3 +49,5 @@ app.disable('x-powered-by');
 app.listen(config.port, () => {
   console.log(`App running on port ${config.port}.`);
 });
+
+module.exports = app;

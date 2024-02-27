@@ -214,8 +214,9 @@ const updateBook = async (request, response) => {
         var query = utils.insert_data("author", ["name", "surname"], values,
             " ON CONFLICT (name, surname) DO UPDATE SET name = EXCLUDED.name, surname = EXCLUDED.surname RETURNING id");
         const res = await getPool().query(query);
+        await getPool().query("DELETE FROM bookauthor where book_id = $1", [book_id]);
         const author_ids = values.map((_, index) => ({ book_id: parseInt(book_id), author_id: res.rows[index].id }));
-        var query = utils.update_data("bookauthor", ["?book_id", "author_id"], author_ids, "book_id");
+        var query = utils.insert_data("bookauthor", ["book_id", "author_id"], author_ids);
         await getPool().query(query);
         response.status(200).send();
     } catch (err) {

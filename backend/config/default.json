@@ -1,7 +1,6 @@
 {
-  "server": {
-    "host": "localhost",
-    "port": 8000
+  "session": {
+    "secret": "secret"
   },
   "database": {
     "user": "admin",

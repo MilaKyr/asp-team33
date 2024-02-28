@@ -1,9 +1,10 @@
 const pgp = require('pg-promise')({ capSQL: true });
 const nodemailer = require("nodemailer");
+const fs = require("fs");
 const config = require('config');
 const email_transport = config.get('email_transporter');
 
-function combine_books_with_authors(rows) {
+function combineBooksWithAuthors(rows) {
     var books = []
     var seen_ids = []
     for (row of rows) {
@@ -24,13 +25,13 @@ function combine_books_with_authors(rows) {
     return books;
 }
 
-function insert_data(tableName, columnNames, values, extras = "") {
+function insertData(tableName, columnNames, values, extras = "") {
     const cs = new pgp.helpers.ColumnSet(columnNames, { table: tableName });
     return pgp.helpers.insert(values, cs) + extras;
 }
 
 
-async function send_email(user, book) {
+async function sendEmail(user, book) {
     var transporter = nodemailer.createTransport({
         host: email_transport.host,
         port: email_transport.port,
@@ -65,11 +66,25 @@ async function send_email(user, book) {
     } catch(err) {
         console.log(err);
     }
-    
+}
+
+function readCoverageReport(file) {
+    indexes = [6, 7, 8];
+    var file = JSON.parse(fs.readFileSync('public/coverage-summary.json', 'utf8'));
+    var newFile = {}
+    Object.entries(file).forEach(entry => {
+        const [key, value] = entry;
+        var result = [];
+        var splitted = key.split('/');
+        indexes.forEach(i => result.push(splitted[i]));
+        newFile[result.join('/')] = value;
+      });
+    return newFile
 }
 
 module.exports = {
-    combine_books_with_authors,
-    insert_data,
-    send_email,
+    combineBooksWithAuthors,
+    insertData,
+    sendEmail,
+    readCoverageReport,
 };

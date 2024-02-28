@@ -10,14 +10,14 @@ var courses = new Set();
 var book_types = new Set();
 var swap_status = new Set();
 
-async function flush_db() {
+async function flushDb() {
     const client = await getPool().connect();
     const _ = await client.query("Truncate booktype, bookauthor, author, bookcourse, course, userbook, bookimage, book, appuser, status, request")
     await client.end();
     console.log("dropped all data");
 }
 
-function fill_subdata() {
+function fillSubdata() {
     parsedJSON.books.forEach((book) => {
         book.authors.forEach((author) => {
             authors.add(author.name + "," + author.surname);
@@ -31,56 +31,56 @@ function fill_subdata() {
     });
 }
 
-async function insert_status() {
+async function insertStatus() {
     var values = []
     for (swap of parsedJSON.requests) {
         values.push({ name: swap.status })
     }
-    var query = utils.insert_data("status", ["name"], values, " RETURNING id");
+    var query = utils.insertData("status", ["name"], values, " RETURNING id");
     const res = await getPool().query(query);
     const statusIds = new Map();
     values.map((key, index) => (statusIds.set(key.name, res.rows[index].id)));
     return statusIds;
 }
 
-async function insert_authors() {
+async function insertAuthors() {
     var values = []
     for (author of authors) {
         var splitted = author.split(",");
         values.push({ name: splitted[0], surname: splitted[1] })
     }
-    var query = utils.insert_data("author", ["name", "surname"], values, " RETURNING id");
+    var query = utils.insertData("author", ["name", "surname"], values, " RETURNING id");
     const res = await getPool().query(query);
     const authorIds = new Map();
     values.map((key, index) => (authorIds.set(key.name + "," + key.surname, res.rows[index].id)));
     return authorIds;
 }
 
-async function insert_courses() {
+async function insertCourses() {
     var values = [];
     for (course_name of courses) {
         values.push({ name: course_name })
     }
-    var query = utils.insert_data("course", ["name"], values, " RETURNING id");
+    var query = utils.insertData("course", ["name"], values, " RETURNING id");
     const res = await getPool().query(query);
     const courseIds = new Map();
     values.map((key, index) => (courseIds.set(key.name, res.rows[index].id)));
     return courseIds;
 }
 
-async function insert_book_types() {
+async function insertBookTypes() {
     var values = [];
     for (book_type of book_types) {
         values.push({ name: book_type })
     }
-    var query = utils.insert_data("booktype", ["name"], values, " RETURNING id");
+    var query = utils.insertData("booktype", ["name"], values, " RETURNING id");
     const res = await getPool().query(query);
     const bookTypeIds = new Map();
     values.map((key, index) => (bookTypeIds.set(key.name, res.rows[index].id)));
     return bookTypeIds;
 }
 
-async function insert_users() {
+async function insertUsers() {
     var values = [];
     for (user of parsedJSON.users) {
         var password_hash = crypto.encrypt(user.password);
@@ -88,7 +88,7 @@ async function insert_users() {
             email: user.email, password_hash: password_hash,
             city: user.city, country: user.country })
     }
-    var query = utils.insert_data("appuser", ["name", "surname", "email", "password_hash", "city", "country"]
+    var query = utils.insertData("appuser", ["name", "surname", "email", "password_hash", "city", "country"]
     , values, " RETURNING id");
     const res = await getPool().query(query);
     const userIds = new Map();
@@ -96,7 +96,7 @@ async function insert_users() {
     return userIds;
 }
 
-async function insert_books(bookTypeIds) {
+async function insertBooks(bookTypeIds) {
     var values = [];
     for (book of parsedJSON.books) {
         var book_type_id = bookTypeIds.get(book.book_type);
@@ -105,14 +105,14 @@ async function insert_books(bookTypeIds) {
             description: book.description, edition: book.edition
         })
     }
-    var query = utils.insert_data("book", ["type_id", "title", "year", "icbn_10", "description", "edition"], values, " RETURNING id");
+    var query = utils.insertData("book", ["type_id", "title", "year", "icbn_10", "description", "edition"], values, " RETURNING id");
     const res = await getPool().query(query);
     const bookIds = new Map();
     values.map((key, index) => (bookIds.set(key.title, res.rows[index].id)));
     return bookIds;
 }
 
-async function insert_bookimage(bookIds, userIds) {
+async function insertBookImage(bookIds, userIds) {
     var values = []
     for (book of parsedJSON.books) {
         var book_id = bookIds.get(book.title);
@@ -121,11 +121,11 @@ async function insert_bookimage(bookIds, userIds) {
             values.push({ book_id: book_id, user_id: user_id, image: book.image_path.toString() })
         }
     }
-    var query = utils.insert_data("bookimage", ['book_id', 'user_id', 'image'], values);
+    var query = utils.insertData("bookimage", ['book_id', 'user_id', 'image'], values);
     await getPool().query(query);
 }
 
-async function insert_bookusers(bookIds, userIds) {
+async function insertBookUsers(bookIds, userIds) {
     var values = []
     for (book of parsedJSON.books) {
         var book_id = bookIds.get(book.title);
@@ -134,22 +134,22 @@ async function insert_bookusers(bookIds, userIds) {
             values.push({ book_id: book_id, user_id: user_id })
         }
     }
-    var query = utils.insert_data("userbook", ['book_id', 'user_id'], values);
+    var query = utils.insertData("userbook", ['book_id', 'user_id'], values);
     await getPool().query(query);
 }
 
-async function insert_bookcourses(bookIds, courseIds) {
+async function insertBookCourses(bookIds, courseIds) {
     var values = []
     for (book of parsedJSON.books) {
         var book_id = bookIds.get(book.title);
         var course_id = courseIds.get(book.course.name);
         values.push({ book_id: book_id, course_id: course_id })
     }
-    var query = utils.insert_data("bookcourse", ['book_id', 'course_id'], values);
+    var query = utils.insertData("bookcourse", ['book_id', 'course_id'], values);
     await getPool().query(query);
 }
 
-async function insert_bookauthors(bookIds, authorIds) {
+async function insertBookAuthors(bookIds, authorIds) {
     var values = []
     for (book of parsedJSON.books) {
         var book_id = bookIds.get(book.title);
@@ -158,11 +158,11 @@ async function insert_bookauthors(bookIds, authorIds) {
             values.push({ book_id: book_id, author_id: author_id })
         }
     }
-    var query = utils.insert_data("bookauthor", ['book_id', 'author_id'], values);
+    var query = utils.insertData("bookauthor", ['book_id', 'author_id'], values);
     await getPool().query(query);
 }
 
-async function insert_requests(userIds, bookIds, statusIds) {
+async function insertRequests(userIds, bookIds, statusIds) {
     var values = []
     for (swap of parsedJSON.requests) {
         var receiver_user_id = userIds.get(swap.receiver_user);
@@ -177,32 +177,32 @@ async function insert_requests(userIds, bookIds, statusIds) {
             reject_date: swap.reject_date
         })
     }
-    var query = utils.insert_data("request", ['receiver_user_id', 'sender_user_id',
+    var query = utils.insertData("request", ['receiver_user_id', 'sender_user_id',
         "book_id", "status_id", "request_date",
         "accept_date", "reject_date"], values);
     await getPool().query(query);
 }
 
-async function insert_all_data() {
+async function insertAllData() {
     console.log("starting to fill database ...");
-    var statusIds = await insert_status();
-    var authorIds = await insert_authors();
-    var courseIds = await insert_courses();
-    var bookTypeIds = await insert_book_types();
-    var userIds = await insert_users();
-    var bookIds = await insert_books(bookTypeIds);
-    await insert_bookimage(bookIds, userIds);
-    await insert_bookusers(bookIds, userIds);
-    await insert_bookcourses(bookIds, courseIds);
-    await insert_bookauthors(bookIds, authorIds);
-    await insert_requests(userIds, bookIds, statusIds);
+    var statusIds = await insertStatus();
+    var authorIds = await insertAuthors();
+    var courseIds = await insertCourses();
+    var bookTypeIds = await insertBookTypes();
+    var userIds = await insertUsers();
+    var bookIds = await insertBooks(bookTypeIds);
+    await insertBookImage(bookIds, userIds);
+    await insertBookUsers(bookIds, userIds);
+    await insertBookCourses(bookIds, courseIds);
+    await insertBookAuthors(bookIds, authorIds);
+    await insertRequests(userIds, bookIds, statusIds);
 }
 
 async function main() {
     try {
-        await flush_db();
-        fill_subdata();
-        await insert_all_data();
+        await flushDb();
+        fillSubdata();
+        await insertAllData();
     } catch (error) {
         console.error("Error in Top level await response:", error);
     }
@@ -212,7 +212,6 @@ async function main() {
 
 module.exports = {
     main,
-    flush_db,
-    authors,
+    flushDb,
 }
 

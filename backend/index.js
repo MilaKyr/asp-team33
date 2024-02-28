@@ -6,6 +6,7 @@ const session = require('express-session');
 const compression = require('compression');
 const routes = require('./routes/main');
 const helmet = require('helmet');
+var utils = require('./utils');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./docs/swagger.json');
 const { getPool } = require('./postgresql');
@@ -43,6 +44,8 @@ app.use(
 );
 app.use(helmet({contentSecurityPolicy: false}));
 app.use('/api/', routes);
+
+app.get('/coverage', (_, res) => {res.json(utils.readCoverageReport('public/coverage-summary.json'));});
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.disable('x-powered-by');
 

@@ -1,9 +1,8 @@
 const crypto = require('./crypto');
 const utils = require("./utils");
 const { getPool } = require('./postgresql');
-const config = require('config');
+const config = require('./config');
 const sharp = require('sharp');
-const AVAILABLE_FILTERS = config.get('search_filters');
 
 
 var fullBookSelect = "SELECT appuser.id AS user_id, appuser.name, appuser.surname, \
@@ -34,7 +33,7 @@ const bookShowcase = async (request, response) => {
     try {
         var statement = fullBookSelect + " FROM (SELECT * FROM book LIMIT 20) as book " + fullBookJoins;
         const results = await getPool().query(statement);
-        var books = utils.combine_books_with_authors(results.rows);
+        var books = utils.combineBooksWithAuthors(results.rows);
         response.status(200).json(books);
     } catch (err) {
         return response.status(500).send(err);
@@ -42,18 +41,18 @@ const bookShowcase = async (request, response) => {
 };
 
 
-const Search = async (request, response) => {
+const search = async (request, response) => {
     try {
         var allBooksStatement = fullBookSelect + " FROM book " + fullBookJoins;
         if (Object.keys(request.query).length === 0 && request.query.constructor === Object) {
             const results = await getPool().query(allBooksStatement);
-            const books = utils.combine_books_with_authors(results.rows);
+            const books = utils.combineBooksWithAuthors(results.rows);
             return response.status(200).json(books);
         } else {
             let where_filter;
             var filter_by = Object.keys(request.query)[0];
             var params = [request.query[filter_by].toLowerCase()];
-            if (!AVAILABLE_FILTERS.includes(filter_by)) {
+            if (!config.searchFilters.includes(filter_by)) {
                 return response.status(404).send();
             }
             if (filter_by == "course_id") {
@@ -66,7 +65,7 @@ const Search = async (request, response) => {
                 where_filter = " WHERE LOWER(author.name) LIKE '%' || $1 || '%' OR LOWER(author.surname) LIKE '%' || $1 || '%'";
             }
             const results = await getPool().query(allBooksStatement + where_filter, params);
-            var books = utils.combine_books_with_authors(results.rows);
+            var books = utils.combineBooksWithAuthors(results.rows);
             return response.status(200).json(books);
         }
     } catch (err) {
@@ -74,7 +73,7 @@ const Search = async (request, response) => {
     }
 };
 
-const SignIn = async (request, response) => {
+const signIn = async (request, response) => {
     try {
         var { email, password } = request.body;
         var statement = "SELECT id, password_hash FROM appuser WHERE email = $1";
@@ -97,7 +96,7 @@ const SignIn = async (request, response) => {
     }
 };
 
-const SignUp = async (request, response) => {
+const signUp = async (request, response) => {
     try {
         var { email, password, name, surname, city, country } = request.body;
         var password_hash = crypto.encrypt(password);
@@ -113,7 +112,7 @@ const SignUp = async (request, response) => {
     }
 };
 
-const MyBooks = async (request, response) => {
+const myBooks = async (request, response) => {
     if (!request.session.loggedin) return response.status(401).send();
     try {
         const user_id = request.session.username;
@@ -121,21 +120,21 @@ const MyBooks = async (request, response) => {
         " FROM (SELECT book_id, user_id FROM userbook WHERE user_id = $1) as user_books \
         LEFT JOIN book ON book.id = user_books.book_id " + fullBookJoins;
         const result = await getPool().query(statement, [user_id]);
-        var books = utils.combine_books_with_authors(result.rows)
+        var books = utils.combineBooksWithAuthors(result.rows)
         response.status(200).json(books);
     } catch (err) {
         return response.status(500).send(err);
     }
 };
 
-const MyBook = async (request, response) => {
+const myBook = async (request, response) => {
     if (!request.session.loggedin) return response.status(401).send();
     try {
         var statement = fullBookSelect + " FROM (SELECT * FROM book WHERE id = $1) AS book " + fullBookJoins;
         const book_id = request.params.id;
         const user_id = request.session.username;
         const result = await getPool().query(statement, [book_id]);
-        var book = utils.combine_books_with_authors(result.rows)[0];
+        var book = utils.combineBooksWithAuthors(result.rows)[0];
         response.status(200).json(book);
     } catch (err) {
         return response.status(404).send(err);
@@ -163,7 +162,7 @@ const insertAuthorModel = async (request, book_id) => {
         values.push({ name: author.name, surname: author.surname });
     });
 
-    var insert_query = utils.insert_data("author", ["name", "surname"], values, " ON CONFLICT DO NOTHING RETURNING id");
+    var insert_query = utils.insertData("author", ["name", "surname"], values, " ON CONFLICT DO NOTHING RETURNING id");
     const db_authors = await getPool().query("WITH temp_table AS ( " + insert_query + ") SELECT id FROM temp_table UNION ALL \
         SELECT id FROM (SELECT id, name||','||surname as full_name FROM author) \
         WHERE \"full_name\" =ANY($1::text[])", [author_names]);
@@ -172,7 +171,7 @@ const insertAuthorModel = async (request, book_id) => {
     db_authors.rows.map((author_row) => {
         values.push({ book_id: book_id, author_id: author_row.id });
     });
-    var insert_query = utils.insert_data("bookauthor", ["book_id", "author_id"], values, " ON CONFLICT DO NOTHING");
+    var insert_query = utils.insertData("bookauthor", ["book_id", "author_id"], values, " ON CONFLICT DO NOTHING");
     await getPool().query(insert_query);
 }
 
@@ -205,12 +204,12 @@ const updateBook = async (request, response) => {
         for (author of authors) {
             values.push({ name: author.name, surname: author.surname });
         }
-        var query = utils.insert_data("author", ["name", "surname"], values,
+        var query = utils.insertData("author", ["name", "surname"], values,
             " ON CONFLICT (name, surname) DO UPDATE SET name = EXCLUDED.name, surname = EXCLUDED.surname RETURNING id");
         const res = await getPool().query(query);
         await getPool().query("DELETE FROM bookauthor where book_id = $1", [book_id]);
         const author_ids = values.map((_, index) => ({ book_id: parseInt(book_id), author_id: res.rows[index].id }));
-        var query = utils.insert_data("bookauthor", ["book_id", "author_id"], author_ids);
+        var query = utils.insertData("bookauthor", ["book_id", "author_id"], author_ids);
         await getPool().query(query);
         response.status(200).send();
     } catch (err) {
@@ -218,7 +217,7 @@ const updateBook = async (request, response) => {
     }
 };
 
-const Swaps = async (request, response) => {
+const swaps = async (request, response) => {
     if (!request.session.loggedin) return response.status(401).send();
     try {
         const user_id = request.session.username;
@@ -230,7 +229,7 @@ const Swaps = async (request, response) => {
     }
 }
 
-const ScheduleSwap = async (request, response) => {
+const scheduleSwap = async (request, response) => {
     if (!request.session.loggedin) return response.status(401).send();
     try {
         var { receiver_id, book_id } = request.body;
@@ -247,7 +246,7 @@ const ScheduleSwap = async (request, response) => {
     }
 }
 
-const DeleteBook = async (request, response) => {
+const deleteBook = async (request, response) => {
     if (!request.session.loggedin) return response.status(401).send();
     try {
         const statement = 'DELETE FROM userbook WHERE user_id = $1 AND book_id = $2';
@@ -260,7 +259,7 @@ const DeleteBook = async (request, response) => {
     }
 };
 
-const DeleteSwap = async (request, response,) => {
+const deleteSwap = async (request, response,) => {
     if (!request.session.loggedin) return response.status(401).send();
     try {
         const swap_id = parseInt(request.params.id);
@@ -307,7 +306,7 @@ const getImage = async (request, response) => {
     }
 }
 
-const UpdateSwap = async (request, response) => {
+const updateSwap = async (request, response) => {
     if (!request.session.loggedin) return response.status(401).send();
     try {
         const swap_id = request.params.id;
@@ -328,8 +327,8 @@ const UpdateSwap = async (request, response) => {
                 var book_id = result.rows[0].book_id;
                 var bookStatement = fullBookSelect + "FROM (SELECT * FROM book WHERE id = $1) AS book " + fullBookJoins;
                 var book = await getPool().query(bookStatement, [book_id]);
-                book = utils.combine_books_with_authors(book.rows);
-                await utils.send_email(sender.rows[0], book);
+                book = utils.combineBooksWithAuthors(book.rows);
+                await utils.sendEmail(sender.rows[0], book);
             }
             return response.status(200).send();
         } catch (err) {
@@ -340,7 +339,7 @@ const UpdateSwap = async (request, response) => {
     }
 }
 
-const Locations = async (request, response) => {
+const locations = async (request, response) => {
     try {
         var statement = "SELECT city, country FROM appuser GROUP BY city, country";
         const results = await getPool().query(statement);
@@ -350,7 +349,7 @@ const Locations = async (request, response) => {
     }
 }
 
-const Courses = async (request, response) => {
+const courses = async (request, response) => {
     try {
         var statement = "SELECT DISTINCT id, name FROM course";
         const results = await getPool().query(statement);
@@ -360,7 +359,7 @@ const Courses = async (request, response) => {
     }
 }
 
-const BookTypes = async (request, response) => {
+const bookTypes = async (request, response) => {
     try {
         var statement = "SELECT DISTINCT id, name FROM booktype";
         const results = await getPool().query(statement);
@@ -370,7 +369,7 @@ const BookTypes = async (request, response) => {
     }
 }
 
-const RequestStatuses = async (request, response) => {
+const requestStatuses = async (request, response) => {
     try {
         var statement = "SELECT DISTINCT id, name FROM status";
         const results = await getPool().query(statement);
@@ -392,7 +391,7 @@ const sentSwaps = async (request, response) => {
     }
 }
 
-const MySwap = async (request, response) => {
+const mySwap = async (request, response) => {
     if (!request.session.loggedin) return response.status(401).send();
     try {
         const swap_id = parseInt(request.params.id);
@@ -407,24 +406,24 @@ const MySwap = async (request, response) => {
 
 module.exports = {
     bookShowcase,
-    Search,
-    MyBook,
+    search,
+    myBook,
     addBook,
     updateBook,
-    SignIn,
-    SignUp,
-    DeleteBook,
-    Swaps,
-    DeleteSwap,
-    ScheduleSwap,
+    signIn,
+    signUp,
+    deleteBook,
+    swaps,
+    deleteSwap,
+    scheduleSwap,
     addImage,
-    UpdateSwap,
-    MyBooks,
-    Locations,
-    Courses,
-    BookTypes,
+    updateSwap,
+    myBooks,
+    locations,
+    courses,
+    bookTypes,
     getImage,
-    RequestStatuses,
+    requestStatuses,
     sentSwaps,
-    MySwap,
+    mySwap,
 };

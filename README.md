@@ -18,7 +18,7 @@ npm run seed-db
 npm run start
 ```
 
-Api docs are available under `http://localhost:8000/api-docs`
+Api docs are available under `http://localhost:8000/api-docs` or `https://asp-team33.onrender.com/api-docs`
 
 To enter PostgresQL within the docker, run:
 ```bash
@@ -33,14 +33,14 @@ To run tests:
 ```bash
 npm test
 ```
-Test infor also can be found in `data/tests/tests_output.txt`
+Test info also can be found in `data/tests/tests_output.txt`
 
 
 To check test coverage:
 ```bash
 npm run coverage
 ```
-
+Coverage can be found also on the server under either `http://localhost:8000/coverage` or `https://asp-team33.onrender.com/coverage`
 
 To start the React Native app run:
 ```bash

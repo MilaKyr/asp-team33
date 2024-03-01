@@ -25,7 +25,7 @@ const wrongSuperUser = {
 
 describe('Base endpoints', () => {
     
-    describe('/POST toke/generate', () => {
+    describe('/POST token/generate', () => {
 
         it('it should generate token', async function() {
             let res = await chai.request(server).post('/api/token/generate').send(superUser);

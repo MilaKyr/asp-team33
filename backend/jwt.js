@@ -1,15 +1,6 @@
 const config = require('./config');
 const jwt = require('jsonwebtoken');
 
-const options = {
-    complete: true,
-    audience: config.jwt.audience,
-    algorithms: ['HS256'],
-    clockTolerance: 0,
-    ignoreExpiration: false,
-    ignoreNotBefore: false
-}
-
 function generateJWToken() {
     let data = {
         time: Date(),

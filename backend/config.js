@@ -48,21 +48,20 @@ config.jwt.secretKey = process.env.JWT_SECRET_KEY || configPkg.jwt.secretKey;
 config.jwt.reactNativeUser = process.env.JWT_USER || configPkg.jwt.user;
 config.jwt.reactNativePassword = process.env.JWT_USER_PASSWORD || configPkg.jwt.password;
 
-config.jwt.signOptions = {
-    expiresIn: process.env.JWT_EXPIRES_IN || configPkg.jwt.expires_in,
-    audience: process.env.JWT_AUDIENCE || configPkg.jwt.audience,
-    algorithm: 'HS256',
-    notBefore: 0,
-    noTimestamp: false,
-    allowInsecureKeySizes: false,
-    allowInvalidAsymmetricKeyTypes: false,
-}
-config.jwt.verifyOptions = {
-    audience: process.env.JWT_AUDIENCE || configPkg.jwt.audience,
-    algorithms: ['HS256'],
-    clockTolerance: 0,
-    ignoreExpiration: false,
-    ignoreNotBefore: false
-}
+config.jwt.signOptions = {};
+config.jwt.signOptions.expiresIn = process.env.JWT_EXPIRES_IN || configPkg.jwt.expires_in;
+config.jwt.signOptions.audience = process.env.JWT_AUDIENCE || configPkg.jwt.audience;
+config.jwt.signOptions.algorithm = 'HS256';
+config.jwt.signOptions.notBefore = 0;
+config.jwt.signOptions.noTimestamp = false;
+config.jwt.signOptions.allowInsecureKeySizes = false;
+config.jwt.signOptions.allowInvalidAsymmetricKeyTypes = false;
+
+config.jwt.verifyOptions = {};
+config.jwt.verifyOptions.audience = process.env.JWT_AUDIENCE || configPkg.jwt.audience;
+config.jwt.verifyOptions.algorithms = ['HS256'];
+config.jwt.verifyOptions.clockTolerance = 0;
+config.jwt.verifyOptions.ignoreExpiration = false;
+config.jwt.verifyOptions.ignoreNotBefore = false;
 
 module.exports = config;

@@ -37,6 +37,7 @@ app.use(session({
   store: postgreStore,
 }));
 
+app.use(cors())
 app.use(bodyParser.json());
 app.use(
   bodyParser.urlencoded({

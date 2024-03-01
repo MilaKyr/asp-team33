@@ -9,7 +9,7 @@ const sharp = require('sharp');
 
 var fullBookSelect = "SELECT appuser.id AS user_id, appuser.name, appuser.surname, \
 appuser.city, appuser.country, \
-book.id AS book_id, book.title, book.description, book.edition, book.icbn_10, book.year, \
+book.id AS book_id, book.title, book.description, book.edition, book.isbn_10, book.year, \
 booktype.id as book_type_id, booktype.name as book_type, \
 author.name||' '||author.surname AS author, course.id AS course_id, course.name AS course ";
 
@@ -205,13 +205,13 @@ const myBook = async (request, response) => {
 
 const insertBookModel = async (data) => {
     var statement = "WITH temp_table AS ( \
-        INSERT INTO book (type_id, title, description, icbn_10, year, edition) VALUES ($1, $2, $3, $4, $5, $6) \
+        INSERT INTO book (type_id, title, description, isbn_10, year, edition) VALUES ($1, $2, $3, $4, $5, $6) \
         ON CONFLICT DO NOTHING RETURNING id) \
         SELECT id FROM temp_table UNION ALL \
         SELECT id FROM book WHERE type_id = $1 AND title = $2 AND description = $3 \
-            AND icbn_10 = $4 AND year = $5 AND edition = $6";
+            AND isbn_10 = $4 AND year = $5 AND edition = $6";
     const book = await getPool().query(statement, 
-                [data.book_type_id, data.title, data.description, data.icbn_10, data.year, data.edition]);
+                [data.book_type_id, data.title, data.description, data.isbn_10, data.year, data.edition]);
     return book.rows[0].id;
 }
 
@@ -264,9 +264,9 @@ const updateBook = async (request, response) => {
             return response.status(404).send();
         }
         const data = matchedData(request);
-        await getPool().query("UPDATE book SET title = $1, description = $2, icbn_10 = $3, \
+        await getPool().query("UPDATE book SET title = $1, description = $2, isbn_10 = $3, \
         year = $4, edition = $5, type_id = $6 WHERE id = $7", 
-        [data.title, data.description, data.icbn_10, data.year, data.edition, data.book_type_id, data.id]);
+        [data.title, data.description, data.isbn_10, data.year, data.edition, data.book_type_id, data.id]);
         await getPool().query("UPDATE bookcourse SET course_id = $1 WHERE book_id = $2", [data.course_id, data.id]);
         var values = []
         for (author of data.authors) {

@@ -101,11 +101,11 @@ async function insertBooks(bookTypeIds) {
     for (book of parsedJSON.books) {
         var book_type_id = bookTypeIds.get(book.book_type);
         values.push({
-            type_id: book_type_id, title: book.title, year: book.year, icbn_10: book.icbn_10,
+            type_id: book_type_id, title: book.title, year: book.year, isbn_10: book.isbn_10,
             description: book.description, edition: book.edition
         })
     }
-    var query = utils.insertData("book", ["type_id", "title", "year", "icbn_10", "description", "edition"], values, " RETURNING id");
+    var query = utils.insertData("book", ["type_id", "title", "year", "isbn_10", "description", "edition"], values, " RETURNING id");
     const res = await getPool().query(query);
     const bookIds = new Map();
     values.map((key, index) => (bookIds.set(key.title, res.rows[index].id)));

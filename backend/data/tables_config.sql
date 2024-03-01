@@ -20,7 +20,7 @@ CREATE TABLE booktype (
 CREATE TABLE book(
     id SERIAL PRIMARY KEY,
     type_id integer,
-    icbn_10 varchar(25),
+    isbn_10 varchar(25),
     title text NOT NULL,
     year integer,
     description text NOT NULL,

@@ -1,16 +1,20 @@
 const express = require('express');
-var config = require('./config');
-const bodyParser = require('body-parser');
-const app = express();
+var cors = require('cors')
+var fs = require('fs');
 const session = require('express-session');
 const compression = require('compression');
-const routes = require('./routes/main');
-const helmet = require('helmet');
-var utils = require('./utils');
+const bodyParser = require('body-parser');
 const swaggerUi = require('swagger-ui-express');
+const helmet = require('helmet');
+const pgSession = require('connect-pg-simple')(session);
+
+var config = require('./config');
+const routes = require('./routes/main');
+var utils = require('./utils');
 const swaggerDocument = require('./docs/swagger.json');
 const { getPool } = require('./postgresql');
-const pgSession = require('connect-pg-simple')(session);
+
+const app = express();
 
 // set the app to parse nested objects
 app.use(express.urlencoded({extended: true})); 
@@ -36,6 +40,7 @@ app.use(session({
   store: postgreStore,
 }));
 
+app.use(cors());
 app.use(bodyParser.json());
 app.use(
   bodyParser.urlencoded({
@@ -45,7 +50,10 @@ app.use(
 app.use(helmet({contentSecurityPolicy: false}));
 app.use('/api/', routes);
 
-app.get('/coverage', (_, res) => {res.json(utils.readCoverageReport('public/coverage-summary.json'));});
+app.get('/coverage', (_, res) => {
+  var file = JSON.parse(fs.readFileSync('public/coverage-summary.json', 'utf8'));
+  return res.json(utils.readCoverageReport(file));
+});
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.disable('x-powered-by');
 

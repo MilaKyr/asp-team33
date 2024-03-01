@@ -1,8 +1,7 @@
 const pgp = require('pg-promise')({ capSQL: true });
 const nodemailer = require("nodemailer");
 const fs = require("fs");
-const config = require('config');
-const email_transport = config.get('email_transporter');
+const config = require('./config');
 
 function combineBooksWithAuthors(rows) {
     var books = []
@@ -33,18 +32,17 @@ function insertData(tableName, columnNames, values, extras = "") {
 
 async function sendEmail(user, book) {
     var transporter = nodemailer.createTransport({
-        host: email_transport.host,
-        port: email_transport.port,
-        secure: email_transport.secure,
+        host: config.emailTransporter.host,
+        port: config.emailTransporter.port,
+        secure: config.emailTransporter.secure,
         auth: {
-            // TODO: replace `user` and `pass` values from <https://forwardemail.net>
-            user: email_transport.auth.user,
-            pass: email_transport.auth.pass,
+            user: config.emailTransporter.auth.user,
+            pass: config.emailTransporter.auth.pass,
           },
     });
 
     var message = {
-        from: email_transport.from,
+        from: config.emailTransporter.from,
         to: user.email,
         subject: "New information about your book swap!",
         text: "Hurra! Your swap request was accepted. \
@@ -63,21 +61,22 @@ async function sendEmail(user, book) {
     };
     try {
         await transporter.sendMail(message);
+        return {success: true};
     } catch(err) {
-        console.log(err);
+        return {success: false};
     }
 }
 
 function readCoverageReport(file) {
-    indexes = [6, 7, 8];
-    var file = JSON.parse(fs.readFileSync('public/coverage-summary.json', 'utf8'));
+    var last_index;
     var newFile = {}
     Object.entries(file).forEach(entry => {
         const [key, value] = entry;
-        var result = [];
+        if (!last_index) {
+            last_index = key.split('/').length - 1;
+        }
         var splitted = key.split('/');
-        indexes.forEach(i => result.push(splitted[i]));
-        newFile[result.join('/')] = value;
+        newFile[splitted[last_index]] = value;
       });
     return newFile
 }

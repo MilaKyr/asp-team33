@@ -1,6 +1,7 @@
 let chai = require('chai');
 let chaiHttp = require('chai-http');
 let server = require('../index');
+let config = require('../config');
 let expect = chai.expect;
 const insert_users = require('../insert_users');
 
@@ -8,8 +9,13 @@ const insert_users = require('../insert_users');
 chai.use(chaiHttp);
 
 let agent;
+let token;
 var bookId;
-var loginInfo = {
+const superUser = {
+    "user": config.jwt.reactNativeUser,
+    "password": config.jwt.reactNativePassword,
+};
+const loginInfo = {
     "email": "brooklyn@estes.com",
     "password": "brooklyn"
 };
@@ -18,10 +24,16 @@ var bookCnt = 0;
 describe('Books', () => {
     before(async function() {
         await insert_users.main();
+        let response = await chai.request.agent(server)
+                            .post('/api/token/generate')
+                            .set('Accept', 'application/json')
+                            .send(superUser);
+        token = response.body.accessToken;
     })
+
     beforeEach(async function() {
         agent = chai.request.agent(server);
-        await agent.post('/api/sign_in').send(loginInfo)
+        await agent.post('/api/sign_in').set('Authorization', token).send(loginInfo)
     });
 
     afterEach(() => {
@@ -55,6 +67,11 @@ describe('Books', () => {
             expect(res.status).to.equal(401);   
         });
 
+        it('it should fail with wrong type of bookId', async function() {
+            let res = await agent.get('/api/my_book/Book1').send();
+            expect(res.status).to.equal(404);   
+        });
+
         it('it should GET book by bookId', async function() {
             let res = await agent.get('/api/my_book/' + bookId).send();
             expect(res.status).to.equal(200);
@@ -63,35 +80,33 @@ describe('Books', () => {
             expect(body.book_id).to.be.eq(bookId);
             expect(body.title).to.be.eq('The CERT Guide to Insider Threats: How to Prevent, Detect, and Respond to Information Technology Crimes (Theft, Sabotage, Fraud)');
             expect(body.edition).to.be.eq(1);
-            expect(body.icbn_10).to.be.eq('0321812573');
+            expect(body.isbn_10).to.be.eq('0321812573');
             expect(body.authors).to.be.a('array');
             expect(body.authors).to.have.lengthOf(3);
         });
-
-
     });
 
 
     describe('/POST add_book ', () => {
         it('it should not authorize to post new book', async function() {
-            let res = await chai.request(server).post('/api/add_book/').send({});
+            let res = await chai.request(server).post('/api/add_book').send({});
             expect(res.status).to.equal(401);   
         });
 
         it('it should POST new book', async function() {
-            let book_type_res = await chai.request(server).get('/api/book_types').send();
-            let courses_res = await chai.request(server).get('/api/courses').send();
-            newBookJson = {
-                "book_type_id": book_type_res.body[0].id, 
-                "title": "Test title", 
-                "description": "Test description", 
-                "icbn_10": "1111111111", 
-                "year" : 1999, 
-                "edition": 1, 
-                "course_id": courses_res.body[0].id,
-                "authors" : [{"name": "John", "surname": "Doe"}, {"name": "Jane", "surname": "Doe"}]
-            }
-            let res = await agent.post('/api/add_book/').send(newBookJson);
+            let book_type_res = await chai.request(server).get('/api/book_types').set("Authorization", token).send();
+            let courses_res = await chai.request(server).get('/api/courses').set("Authorization", token).send();
+            var newBookJson = {
+                book_type_id: book_type_res.body[0].id, 
+                title: "Test title", 
+                description: "Test description", 
+                isbn_10: "1111111111", 
+                year : 1999, 
+                edition: 1, 
+                course_id: courses_res.body[0].id,
+                authors: [{"name": "John", "surname": "Doe"}, {"name": "Jane", "surname": "Doe"}]
+            };
+            let res = await agent.post('/api/add_book').set('content-type', 'application/json').send(newBookJson);
             expect(res.status).to.equal(200);
             expect(res.body).to.be.a('number');
             bookId = res.body;
@@ -123,7 +138,7 @@ describe('Books', () => {
                 "book_type_id": existing_book.book_type_id, 
                 "title": newBookTitle, 
                 "description": existing_book.description, 
-                "icbn_10": existing_book.icbn_10, 
+                "isbn_10": existing_book.isbn_10, 
                 "year" : existing_book.year, 
                 "edition": existing_book.edition, 
                 "course_id": existing_book.course_id,
@@ -145,7 +160,7 @@ describe('Books', () => {
                 "book_type_id": existing_book.book_type_id, 
                 "title": existing_book.title, 
                 "description": existing_book.description, 
-                "icbn_10": existing_book.icbn_10, 
+                "isbn_10": existing_book.isbn_10, 
                 "year" : newBookYear, 
                 "edition": existing_book.edition, 
                 "course_id": existing_book.course_id,
@@ -167,7 +182,7 @@ describe('Books', () => {
                 "book_type_id": existing_book.book_type_id, 
                 "title": existing_book.title, 
                 "description": newBookDescription, 
-                "icbn_10": existing_book.icbn_10, 
+                "isbn_10": existing_book.isbn_10, 
                 "year" : existing_book.year, 
                 "edition": existing_book.edition, 
                 "course_id": existing_book.course_id,
@@ -180,8 +195,8 @@ describe('Books', () => {
             expect(updated_book_res.body.description).to.be.eq(newBookDescription);
         });
 
-        it('it should update ICBN 10', async function() {
-            var newBookIcbn = "0000000";
+        it('it should update ISBN 10', async function() {
+            var newBookIsbn = "0000000000";
             let existing_book_res = await agent.get('/api/my_book/' + bookId).send();
             let existing_book = existing_book_res.body;
             expect(existing_book).to.be.a('object');
@@ -189,7 +204,7 @@ describe('Books', () => {
                 "book_type_id": existing_book.book_type_id, 
                 "title": existing_book.title, 
                 "description": existing_book.description, 
-                "icbn_10": newBookIcbn, 
+                "isbn_10": newBookIsbn, 
                 "year" : existing_book.year, 
                 "edition": existing_book.edition, 
                 "course_id": existing_book.course_id,
@@ -199,7 +214,7 @@ describe('Books', () => {
             expect(res.status).to.equal(200);
 
             let updated_book_res = await agent.get('/api/my_book/' + bookId).send();
-            expect(updated_book_res.body.icbn_10).to.be.eq(newBookIcbn);
+            expect(updated_book_res.body.isbn_10).to.be.eq(newBookIsbn);
         });
 
         it('it should update edition', async function() {
@@ -211,7 +226,7 @@ describe('Books', () => {
                 "book_type_id": existing_book.book_type_id, 
                 "title": existing_book.title, 
                 "description": existing_book.description, 
-                "icbn_10": existing_book.icbn_10, 
+                "isbn_10": existing_book.isbn_10, 
                 "year" : existing_book.year, 
                 "edition": newBookEdition, 
                 "course_id": existing_book.course_id,
@@ -229,13 +244,13 @@ describe('Books', () => {
             let existing_book = existing_book_res.body;
             expect(existing_book).to.be.a('object');
 
-            let courses_res = await chai.request(server).get('/api/courses').send();
+            let courses_res = await chai.request(server).get('/api/courses').set("Authorization", token).send();
             const newBookCourseId = courses_res.body.find(function (course) {return course.id != existing_book.course_id});
             var updated_book = {
                 "book_type_id": existing_book.book_type_id, 
                 "title": existing_book.title, 
                 "description": existing_book.description, 
-                "icbn_10": existing_book.icbn_10, 
+                "isbn_10": existing_book.isbn_10, 
                 "year" : existing_book.year, 
                 "edition": existing_book.edition, 
                 "course_id": newBookCourseId.id,
@@ -258,7 +273,7 @@ describe('Books', () => {
                 "book_type_id": existing_book.book_type_id, 
                 "title": existing_book.title, 
                 "description": existing_book.description, 
-                "icbn_10": existing_book.icbn_10, 
+                "isbn_10": existing_book.isbn_10, 
                 "year" : existing_book.year, 
                 "edition": existing_book.edition, 
                 "course_id": existing_book.course_id,

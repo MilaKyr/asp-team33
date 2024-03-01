@@ -41,4 +41,28 @@ config.imageResize.height = parseInt(process.env.IMAGE_RESIZE_HEIGHT) || configP
 config.imageResize.width = parseInt(process.env.IMAGE_RESIZE_WIDTH) || configPkg.imageResize.width;
 config.imageResize.fit = process.env.IMAGE_RESIZE_FIT || configPkg.imageResize.fit;
 
+// JWT
+config.jwt = {};
+config.jwt.tokenHeaderKey = process.env.JWT_HEADER_KEY || configPkg.jwt.header_key;
+config.jwt.secretKey = process.env.JWT_SECRET_KEY || configPkg.jwt.secretKey;
+config.jwt.reactNativeUser = process.env.JWT_USER || configPkg.jwt.user;
+config.jwt.reactNativePassword = process.env.JWT_USER_PASSWORD || configPkg.jwt.password;
+
+config.jwt.signOptions = {
+    expiresIn: process.env.JWT_EXPIRES_IN || configPkg.jwt.expires_in,
+    audience: process.env.JWT_AUDIENCE || configPkg.jwt.audience,
+    algorithm: 'HS256',
+    notBefore: 0,
+    noTimestamp: false,
+    allowInsecureKeySizes: false,
+    allowInvalidAsymmetricKeyTypes: false,
+}
+config.jwt.verifyOptions = {
+    audience: process.env.JWT_AUDIENCE || configPkg.jwt.audience,
+    algorithms: ['HS256'],
+    clockTolerance: 0,
+    ignoreExpiration: false,
+    ignoreNotBefore: false
+}
+
 module.exports = config;

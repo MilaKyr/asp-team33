@@ -1,5 +1,6 @@
 const express = require('express');
 var config = require('./config');
+var fs = require('fs');
 const bodyParser = require('body-parser');
 const app = express();
 const session = require('express-session');
@@ -45,7 +46,10 @@ app.use(
 app.use(helmet({contentSecurityPolicy: false}));
 app.use('/api/', routes);
 
-app.get('/coverage', (_, res) => {res.json(utils.readCoverageReport('public/coverage-summary.json'));});
+app.get('/coverage', (_, res) => {
+  var file = JSON.parse(fs.readFileSync('public/coverage-summary.json', 'utf8'));
+  return res.json(utils.readCoverageReport(file));
+});
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.disable('x-powered-by');
 

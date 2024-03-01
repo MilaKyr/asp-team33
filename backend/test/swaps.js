@@ -1,5 +1,6 @@
 let chai = require('chai');
 let chaiHttp = require('chai-http');
+let config = require('../config');
 let server = require('../index');
 let expect = chai.expect;
 const insert_users = require('../insert_users');
@@ -7,14 +8,18 @@ const insert_users = require('../insert_users');
 
 chai.use(chaiHttp);
 
+var token;
 let agent;
 var swapId;
-var loginInfo = {
+const loginInfo = {
     "email": "brooklyn@estes.com",
     "password": "brooklyn"
 };
-
-var swapUser = {
+const superUser = {
+    "user": config.jwt.reactNativeUser,
+    "password": config.jwt.reactNativePassword,
+};
+const swapUser = {
     "email": "dana@chambers.com",
     "password": "dana",
     "name": "Dana",
@@ -25,11 +30,16 @@ var swapUser = {
 describe('Swaps', () => {
     before(async function() {
         await insert_users.main();
+        let response = await chai.request.agent(server)
+                        .post('/api/token/generate')
+                        .set('Accept', 'application/json')
+                        .send(superUser);
+        token = response.body.accessToken;
     })
 
     beforeEach(async function() {
         agent = chai.request.agent(server);
-        await agent.post('/api/sign_in').send(loginInfo)
+        await agent.post('/api/sign_in').set("Authorization", token).send(loginInfo)
     });
 
     afterEach(() => {
@@ -61,7 +71,7 @@ describe('Swaps', () => {
 
         it('it should update swap status', async function() {
             let existing_swaps_res = await agent.get('/api/my_swaps').send();
-            let statuses_res = await agent.get('/api/request_statuses').send();
+            let statuses_res = await agent.get('/api/request_statuses').set("Authorization", token).send();
             swapId = existing_swaps_res.body[0].id;
             const newStatusId = statuses_res.body.find(function (status) {return status.id != existing_swaps_res.body[0].status_id});
             
@@ -77,6 +87,18 @@ describe('Swaps', () => {
             expect(updated_res.body.status_id).to.equal(newStatusId.id);
         });
 
+        it('should fail to update swap with wrong status_id', async function() {
+            var updatedSwap = {"status_id": -1}
+            let update_res = await agent.put('/api/update_swap/' + swapId).send(updatedSwap);
+            expect(update_res.status).to.equal(404);
+        });
+
+        it('should fail to update swap with unknown status_id', async function() {
+            var updatedSwap = {"status_id": 1}
+            let update_res = await agent.put('/api/update_swap/' + swapId).send(updatedSwap);
+            expect(update_res.status).to.equal(404);
+        });
+
         it('it should get error with unknown query', async function() {
             let res = await agent.put('/api/update_swap/' + swapId).send({});
             expect(res.status).to.equal(404);   
@@ -86,6 +108,7 @@ describe('Swaps', () => {
             let res = await agent.put('/api/update_swap/0').send({});
             expect(res.status).to.equal(404);   
         });
+
     });
 
     describe('/POST schedule_swap ', () => {
@@ -95,7 +118,7 @@ describe('Swaps', () => {
         });
 
         it('it should create new swap', async function() {
-            let books_res = await agent.get('/api/').send();
+            let books_res = await agent.get('/api/').set("Authorization", token).send();
             const requestedBook = books_res.body.find(function (book) {return book.user_name = swapUser.name});
             
             var newSwap = {
@@ -145,10 +168,16 @@ describe('Swaps', () => {
             expect(res.body).to.have.lengthOf(0);
         });
 
-        it('it should get error with unknown bookId', async function() {
-            let res = await agent.put('/api/update_book/0').send({});
-            expect(res.status).to.equal(404);   
+        it('it should fail to delete swap with wrong swapId', async function() {
+            let res = await agent.delete('/api/my_swaps/Unk').send();
+            expect(res.status).to.equal(404);
         });
+
+        it('it should fail to get swap with wrong swapId', async function() {
+            let res = await agent.get('/api/my_swaps/Unk').send();
+            expect(res.status).to.equal(404);
+        });
+
     });
 
 });

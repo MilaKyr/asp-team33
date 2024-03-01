@@ -2,6 +2,14 @@
   "session": {
     "secret": "secret"
   },
+  "jwt": {
+    "secretKey": "secret-key",
+    "user": "react-native",
+    "password": "react-native-password",
+    "header_key": "Authorization",
+    "expires_in": "1d",
+    "audience": "http://localhost"
+  },
   "database": {
     "user": "admin",
     "host": "localhost",

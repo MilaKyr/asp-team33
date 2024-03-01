@@ -1,6 +1,7 @@
 let chai = require('chai');
 let chaiHttp = require('chai-http');
 let server = require('../index');
+let config = require('../config');
 let expect = chai.expect;
 const insert_users = require('../insert_users');
 
@@ -8,8 +9,13 @@ const insert_users = require('../insert_users');
 chai.use(chaiHttp);
 
 let agent;
+let token;
 var bookId;
-var loginInfo = {
+const superUser = {
+    "user": config.jwt.reactNativeUser,
+    "password": config.jwt.reactNativePassword,
+};
+const loginInfo = {
     "email": "brooklyn@estes.com",
     "password": "brooklyn"
 };
@@ -18,10 +24,16 @@ var bookCnt = 0;
 describe('Books', () => {
     before(async function() {
         await insert_users.main();
+        let response = await chai.request.agent(server)
+                            .post('/api/token/generate')
+                            .set('Accept', 'application/json')
+                            .send(superUser);
+        token = response.body.accessToken;
     })
+
     beforeEach(async function() {
         agent = chai.request.agent(server);
-        await agent.post('/api/sign_in').send(loginInfo)
+        await agent.post('/api/sign_in').set('Authorization', token).send(loginInfo)
     });
 
     afterEach(() => {
@@ -55,6 +67,11 @@ describe('Books', () => {
             expect(res.status).to.equal(401);   
         });
 
+        it('it should fail with wrong type of bookId', async function() {
+            let res = await agent.get('/api/my_book/Book1').send();
+            expect(res.status).to.equal(404);   
+        });
+
         it('it should GET book by bookId', async function() {
             let res = await agent.get('/api/my_book/' + bookId).send();
             expect(res.status).to.equal(200);
@@ -67,31 +84,29 @@ describe('Books', () => {
             expect(body.authors).to.be.a('array');
             expect(body.authors).to.have.lengthOf(3);
         });
-
-
     });
 
 
     describe('/POST add_book ', () => {
         it('it should not authorize to post new book', async function() {
-            let res = await chai.request(server).post('/api/add_book/').send({});
+            let res = await chai.request(server).post('/api/add_book').send({});
             expect(res.status).to.equal(401);   
         });
 
         it('it should POST new book', async function() {
-            let book_type_res = await chai.request(server).get('/api/book_types').send();
-            let courses_res = await chai.request(server).get('/api/courses').send();
-            newBookJson = {
-                "book_type_id": book_type_res.body[0].id, 
-                "title": "Test title", 
-                "description": "Test description", 
-                "icbn_10": "1111111111", 
-                "year" : 1999, 
-                "edition": 1, 
-                "course_id": courses_res.body[0].id,
-                "authors" : [{"name": "John", "surname": "Doe"}, {"name": "Jane", "surname": "Doe"}]
-            }
-            let res = await agent.post('/api/add_book/').send(newBookJson);
+            let book_type_res = await chai.request(server).get('/api/book_types').set("Authorization", token).send();
+            let courses_res = await chai.request(server).get('/api/courses').set("Authorization", token).send();
+            var newBookJson = {
+                book_type_id: book_type_res.body[0].id, 
+                title: "Test title", 
+                description: "Test description", 
+                icbn_10: "1111111111", 
+                year : 1999, 
+                edition: 1, 
+                course_id: courses_res.body[0].id,
+                authors: [{"name": "John", "surname": "Doe"}, {"name": "Jane", "surname": "Doe"}]
+            };
+            let res = await agent.post('/api/add_book').set('content-type', 'application/json').send(newBookJson);
             expect(res.status).to.equal(200);
             expect(res.body).to.be.a('number');
             bookId = res.body;
@@ -229,7 +244,7 @@ describe('Books', () => {
             let existing_book = existing_book_res.body;
             expect(existing_book).to.be.a('object');
 
-            let courses_res = await chai.request(server).get('/api/courses').send();
+            let courses_res = await chai.request(server).get('/api/courses').set("Authorization", token).send();
             const newBookCourseId = courses_res.body.find(function (course) {return course.id != existing_book.course_id});
             var updated_book = {
                 "book_type_id": existing_book.book_type_id, 

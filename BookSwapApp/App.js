@@ -198,7 +198,6 @@ export default function App() {
 
   const getAndSaveDeviceAccessToken = async () => {
     try {
-
       try {
         const accessToken = await AsyncStorage.getItem('systemAccessToken');
         await axios.get(API_URL, {
@@ -206,10 +205,9 @@ export default function App() {
             Authorization: accessToken
           }
         });
-        console.log('We are still authorized')
         setInitialLoading(false);
       } catch (error) {
-        if (error && error.response && error.response.status == 401) {
+        if (error && error.response && (error.response.status == 401 || error.response.status == 403)) {
           console.log('failed initial request, creating system token')
           const response = await axios.post(`${API_URL}/token/generate`, {
             user: process.env.EXPO_PUBLIC_JWT_USER,
@@ -263,21 +261,23 @@ export default function App() {
                 title: 'Book Swap'
               }} name="Home" component={HomeStack} />
               <Tab.Screen name="Search" component={SearchStack} />
-              <Tab.Screen options={{
-                title: 'My Books',
-                headerTitle: 'My Books',
-                headerRight: () => {
-                  if (state.userToken != null) {
-                    return (
-                      <Button variant='ghost' onPress={() => {
-                        handleSignOut()
-                      }}>Sign Out</Button>
-                    )
-                  }
-                  return null;
-                },
-              }} name="MyBooks" component={MyBooksStack} />
-              {state.userToken != null ? null : (
+
+              {state.userToken != null ? (
+                <Tab.Screen options={{
+                  title: 'My Books',
+                  headerTitle: 'My Books',
+                  headerRight: () => {
+                    if (state.userToken != null) {
+                      return (
+                        <Button variant='ghost' onPress={() => {
+                          handleSignOut()
+                        }}>Sign Out</Button>
+                      )
+                    }
+                    return null;
+                  },
+                }} name="MyBooks" component={MyBooksStack} />
+              ) : (
                 <Tab.Screen options={{
                   title: 'Sign In',
                   headerTitle: 'Sign In',

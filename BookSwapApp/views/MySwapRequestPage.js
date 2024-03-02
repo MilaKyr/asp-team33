@@ -89,7 +89,7 @@ const MySwapRequestPage = () => {
                     }) => <Box marginBottom={6} marginRight={1}>
                             <HStack justifyContent="space-between">
                                 <VStack justifyContent='space-between' pl={2} width='100%' minHeight={100}>
-                                    <Badge marginTop={2} width={'40%'} rounded='3xl' variant='solid' colorScheme={OFFER_TO_SCHEME_MAPPER[OFFER_STATUS[item.status_id]]}>{OFFER_STATUS[item.status_id]}</Badge>
+                                    <Badge marginTop={2} width={'40%'} rounded='3xl' variant='solid' colorScheme={OFFER_TO_SCHEME_MAPPER[String(item.status_name).toUpperCase()]}>{item.status_name}</Badge>
 
                                     <Heading marginY={2} size='sm' color="coolGray.800" bold>
                                         {`${item.receiver_name} ${item.receiver_surname}`}

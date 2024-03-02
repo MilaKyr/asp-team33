@@ -60,6 +60,9 @@ const BookDetailPage = ({ navigation, route }) => {
                 title: "Error scheduling swap",
                 placement: "bottom"
             })
+            if (error && error.response && error.response.status == 401) {
+                navigation.navigate('SignIn')
+            }
         }
     }
 

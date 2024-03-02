@@ -3,6 +3,7 @@ import { Box, HStack, Heading, Stack, Text } from 'native-base';
 import { StyleSheet, Image, Pressable } from 'react-native';
 import { API_URL } from '../constants/api';
 import React from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 const BookShowcaseItem = ({ item, navigation, index }) => {
@@ -18,7 +19,7 @@ const BookShowcaseItem = ({ item, navigation, index }) => {
             });
             setImage(response.data)
         } catch (error) {
-
+            console.log('response for image error', error)
         }
     }
 

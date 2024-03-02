@@ -6,6 +6,7 @@ import { AntDesign } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 
 import { API_URL } from '../constants/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const transformAuthors = (authors = '') => {
     if (authors.trim().length == 0) return [];
@@ -38,7 +39,7 @@ function BookUploadForm() {
     const validate = (dataToSend) => {
         console.log({ dataToSend })
         const REQUIRED_FIELDS = [
-            'title', 'description', 'authors', 'year', 'course_id', 'book_type_id'
+            'title', 'description', 'authors', 'year', 'course_id', 'book_type_id', 'isbn_10', 'edition'
         ]
         let valid = true;
         let errorObject = {}
@@ -46,6 +47,12 @@ function BookUploadForm() {
             if (REQUIRED_FIELDS.includes(field) && isUndefinedOrEmpty(value)) {
                 errorObject[field] = `${field} is required`
                 valid = false;
+            }
+
+            if (field === 'isbn_10') {
+                if (value && value.length < 10) {
+                    errorObject[field] = `ISBN cannot be less than 10 digits`
+                }
             }
         })
         setErrors(errorObject);
@@ -102,7 +109,7 @@ function BookUploadForm() {
             book_type_id: formData.book_type_id,
             title: formData.title,
             description: formData.description,
-            icbn_10: formData.icbn_10,
+            isbn_10: Number(formData.isbn_10 || 0),
             year: formData.year,
             edition: formData.edition,
             course_id: formData.course_id
@@ -216,7 +223,7 @@ function BookUploadForm() {
                 <FormControl.Label _text={{
                     bold: true
                 }}>Description</FormControl.Label>
-                <Input size='xl' placeholder="Book details" onChangeText={value => setData({
+                <Input numberOfLines={5} size='xl' placeholder="Book details" onChangeText={value => setData({
                     ...formData,
                     description: value
                 })} />
@@ -283,23 +290,25 @@ function BookUploadForm() {
                 {'course_id' in errors ? <FormControl.ErrorMessage>{errors.course_id}</FormControl.ErrorMessage> : null}
             </FormControl>
 
-            <FormControl>
+            <FormControl isRequired isInvalid={'isbn_10' in errors}>
                 <FormControl.Label _text={{
                     bold: true
-                }}>ICBN</FormControl.Label>
+                }}>ISBN</FormControl.Label>
                 <Input size='xl' placeholder="Book Year" onChangeText={value => setData({
                     ...formData,
-                    icbn_10: value
+                    isbn_10: value
                 })} />
+                {'isbn_10' in errors ? <FormControl.ErrorMessage>{errors.isbn_10}</FormControl.ErrorMessage> : null}
             </FormControl>
-            <FormControl>
+            <FormControl isRequired isInvalid={'edition' in errors}>
                 <FormControl.Label _text={{
                     bold: true
                 }}>Book Edition</FormControl.Label>
-                <Input size='xl' placeholder="Edition (optional)" onChangeText={value => setData({
+                <Input size='xl' placeholder="Edition" onChangeText={value => setData({
                     ...formData,
                     edition: value
                 })} />
+                {'edition' in errors ? <FormControl.ErrorMessage>{errors.edition}</FormControl.ErrorMessage> : null}
             </FormControl>
             <Button size='lg' onPress={onSubmit} mt="5" colorScheme="cyan">
                 Upload Book

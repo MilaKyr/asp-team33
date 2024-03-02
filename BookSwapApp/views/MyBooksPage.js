@@ -41,7 +41,7 @@ const RenderBookItem = ({ item, navigation, deleteBook }) => {
                     <Text fontSize="xs" _light={{
                         color: "violet.500"
                     }} fontWeight="500">
-                        by {item.author}.
+                        by {(item.authors || []).join(', ')}.
                     </Text>
                     <Text fontSize="xs" color="coolGray.800" alignSelf="flex-start">
                         Course: {item.course}
@@ -143,8 +143,8 @@ const MyBooksPage = ({ navigation }) => {
                         }) => <RenderBookItem deleteBook={deleteBook} item={item} navigation={navigation} />} keyExtractor={item => item.book_id} />
                 )}
 
-            </Box >
-        </ScrollView >
+            </Box>
+        </ScrollView>
     );
 }
 

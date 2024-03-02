@@ -240,6 +240,7 @@ const addBook = async (request, response) => {
     if (!request.session.loggedin) return response.status(401).send();
     try {
         const validation = validationResult(request);
+        console.log('validation', validation.array())
         if (!validation.isEmpty()) {
             return response.status(404).send();
         }

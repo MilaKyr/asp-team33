@@ -103,6 +103,21 @@ function SearchStack() {
   );
 }
 
+
+function HomeStack() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen options={{
+        headerShown: false
+      }} name="HomePage" component={HomePage} />
+      <Stack.Screen options={{
+        headerTitle: 'Book Detail'
+      }} name="BookDetail" component={BookDetailPage} />
+    </Stack.Navigator>
+  );
+}
+
+
 export default function App() {
 
   const [state, dispatch] = React.useReducer(
@@ -223,7 +238,7 @@ export default function App() {
           })}>
             <Tab.Screen options={{
               title: 'Book Swap'
-            }} name="Home" component={HomePage} />
+            }} name="Home" component={HomeStack} />
             <Tab.Screen name="Search" component={SearchStack} />
             <Tab.Screen options={{
               title: 'My Books',

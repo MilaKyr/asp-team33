@@ -7,7 +7,7 @@ const HomePage = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <BookShowcase navigation={navigation} />
-      <CategoryView />
+      <CategoryView navigation={navigation} />
     </View>
   );
 }

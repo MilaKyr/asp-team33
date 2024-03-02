@@ -2,11 +2,13 @@ import { Box, Pressable, Text } from 'native-base';
 import { StyleSheet, View } from 'react-native';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 
-const categories = ["Categories", "Categories", "Categories", "Categories", "Categories", "Categories"]
+const categories = ["Countries", "Courses", "Authors", "Year",]
 
-const CategoryItem = ({ item, index }) => (
+const CategoryItem = ({ item, index, navigation }) => (
     <Box key={index + Math.random()} alignItems="center">
-        <Pressable>
+        <Pressable onPress={() => {
+            navigation?.navigate('Search');
+        }}>
             {({
                 isHovered,
                 isPressed
@@ -31,17 +33,17 @@ const CategoryItem = ({ item, index }) => (
         </Pressable>
     </Box>
 )
-const CategoryView = () => {
+const CategoryView = ({ navigation }) => {
     return (
         <View style={styles.container}>
             <View style={styles.column}>
                 {categories.slice(0, Math.ceil(categories.length / 2)).map((item, index) => (
-                    <CategoryItem item={item} index={index} />
+                    <CategoryItem navigation={navigation} item={item} index={index} />
                 ))}
             </View>
             <View style={styles.column}>
                 {categories.slice(Math.ceil(categories.length / 2)).map((item, index) => (
-                    <CategoryItem item={item} index={index * 2} />
+                    <CategoryItem navigation={navigation} item={item} index={index * 2} />
                 ))}
             </View>
         </View>

@@ -119,7 +119,14 @@ function UpdateBookForm({ book: existingBook }) {
     const getCourses = async () => {
         try {
             const url = `${API_URL}/courses`
-            const response = await axios.get(url);
+
+
+            const accessToken = await AsyncStorage.getItem('systemAccessToken');
+            const response = await axios.get(url, {
+                headers: {
+                    Authorization: accessToken
+                }
+            });
             console.log('get the courses', response.data)
             setCourses(response.data);
         } catch (error) {
@@ -129,7 +136,12 @@ function UpdateBookForm({ book: existingBook }) {
     const getBookTypes = async () => {
         try {
             const url = `${API_URL}/book_types`
-            const response = await axios.get(url);
+            const accessToken = await AsyncStorage.getItem('systemAccessToken');
+            const response = await axios.get(url, {
+                headers: {
+                    Authorization: accessToken
+                }
+            });
             console.log('get the book_types', response.data)
             setBookTypes(response.data);
         } catch (error) {

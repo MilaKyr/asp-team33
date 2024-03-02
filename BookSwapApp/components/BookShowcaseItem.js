@@ -10,7 +10,12 @@ const BookShowcaseItem = ({ item, navigation, index }) => {
 
     const fetchImage = async () => {
         try {
-            const response = await axios.get(API_URL + `/image?book_id=${item.book_id}&user_id=${item.user_id}`);
+            const accessToken = await AsyncStorage.getItem('systemAccessToken');
+            const response = await axios.get(API_URL + `/image?book_id=${item.book_id}&user_id=${item.user_id}`, {
+                headers: {
+                    Authorization: accessToken
+                }
+            });
             setImage(response.data)
         } catch (error) {
 

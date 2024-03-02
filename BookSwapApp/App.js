@@ -20,6 +20,8 @@ import SwapSchedulePage from './views/SwapSchedulePage';
 import React from 'react';
 import { AuthContext } from './util/context';
 import UpdateBookPage from './views/UpdateBookPage';
+import axios from 'axios';
+import { API_URL } from './constants/api';
 
 const config = {
   dependencies: {
@@ -164,7 +166,37 @@ export default function App() {
     isSignedIn: state.userToken != null
   }
 
-  console.log(state)
+
+  const getAndSaveDeviceAccessToken = async () => {
+    try {
+
+      try {
+        const accessToken = await AsyncStorage.getItem('systemAccessToken');
+        await axios.get(API_URL, {
+          headers: {
+            Authorization: accessToken
+          }
+        });
+        console.log('We are still authorized')
+      } catch (error) {
+        if (error && error.response && error.response.status == 401) {
+          console.log('failed initial request, creating system token')
+          const response = await axios.post(`${API_URL}/token/generate`, {
+            user: process.env.EXPO_PUBLIC_JWT_USER,
+            password: process.env.EXPO_PUBLIC_JWT_USER_PASSWORD,
+          })
+          await AsyncStorage.setItem('systemAccessToken', response.data.accessToken);
+        }
+      }
+    } catch (error) {
+      console.log('generate token error ', error.response.data)
+    }
+  }
+
+  React.useEffect(() => {
+    getAndSaveDeviceAccessToken()
+  }, [])
+
 
   return (
     <NativeBaseProvider config={config}>

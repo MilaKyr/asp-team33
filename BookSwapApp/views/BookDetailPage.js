@@ -5,6 +5,7 @@ import { AuthContext } from '../util/context';
 import { API_URL } from '../constants/api';
 import axios from 'axios';
 import { useToast } from 'native-base';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 
@@ -19,7 +20,12 @@ const BookDetailPage = ({ navigation, route }) => {
 
     const fetchImage = async () => {
         try {
-            const response = await axios.get(API_URL + `/image?book_id=${item.book_id}&user_id=${item.user_id}`);
+            const accessToken = await AsyncStorage.getItem('systemAccessToken');
+            const response = await axios.get(API_URL + `/image?book_id=${item.book_id}&user_id=${item.user_id}`, {
+                headers: {
+                    Authorization: accessToken
+                }
+            });
             setImage(response.data)
         } catch (error) {
 

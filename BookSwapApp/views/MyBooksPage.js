@@ -4,13 +4,19 @@ import { RefreshControl, StyleSheet, View } from 'react-native';
 import { API_URL } from '../constants/api';
 import axios from 'axios';
 import { AuthContext } from '../util/context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const RenderBookItem = ({ item, navigation, deleteBook }) => {
     const [image, setImage] = React.useState(null);
 
     const fetchImage = async () => {
         try {
-            const response = await axios.get(API_URL + `/image?book_id=${item.book_id}&user_id=${item.user_id}`);
+            const accessToken = await AsyncStorage.getItem('systemAccessToken');
+            const response = await axios.get(API_URL + `/image?book_id=${item.book_id}&user_id=${item.user_id}`, {
+                headers: {
+                    Authorization: accessToken
+                }
+            });
             setImage(response.data)
         } catch (error) {
 

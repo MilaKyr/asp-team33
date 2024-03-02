@@ -87,18 +87,25 @@ const SignInPage = ({ navigation }) => {
 
     const onFormSubmit = ({ email, password }) => {
         setSubmitting(true)
-        axios.post(`${API_URL}/sign_in`, {
-            email,
-            password
-        }).then(res => {
-            if (res.data) {
-                AsyncStorage.setItem('userToken', String(res.data));
-                signIn(String(res.data));
-                setSubmitting(false)
-            }
-            console.log('resultssss===>', res.data)
-        }).catch(err => {
-            console.log('error===>', err)
+
+        AsyncStorage.getItem('systemAccessToken').then(accessToken => {
+            axios.post(`${API_URL}/sign_in`, {
+                email,
+                password
+            }, {
+                headers: {
+                    Authorization: accessToken
+                }
+            }).then(res => {
+                if (res.data) {
+                    AsyncStorage.setItem('userToken', String(res.data));
+                    signIn(String(res.data));
+                    setSubmitting(false)
+                }
+                console.log('resultssss===>', res.data)
+            }).catch(err => {
+                console.log('error===>', err)
+            });
         });
     }
 

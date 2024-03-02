@@ -1,15 +1,17 @@
-import { Text, Box, HStack, VStack, Image, Button, ScrollView } from 'native-base';
+import { Text, Box, HStack, VStack, Image, Button, ScrollView, Modal } from 'native-base';
 import { StyleSheet, View } from 'react-native';
 import React from 'react';
 import { AuthContext } from '../util/context';
 import { API_URL } from '../constants/api';
 import axios from 'axios';
 import { useToast } from 'native-base';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 
 const BookDetailPage = ({ navigation, route }) => {
     const { isSignedIn } = React.useContext(AuthContext);
+    const [showModal, setShowModal] = React.useState(false);
     const [image, setImage] = React.useState(null);
     const toast = useToast();
     const item = route.params && route.params.book ? route.params.book : {}
@@ -19,7 +21,12 @@ const BookDetailPage = ({ navigation, route }) => {
 
     const fetchImage = async () => {
         try {
-            const response = await axios.get(API_URL + `/image?book_id=${item.book_id}&user_id=${item.user_id}`);
+            const accessToken = await AsyncStorage.getItem('systemAccessToken');
+            const response = await axios.get(API_URL + `/image?book_id=${item.book_id}&user_id=${item.user_id}`, {
+                headers: {
+                    Authorization: accessToken
+                }
+            });
             setImage(response.data)
         } catch (error) {
 
@@ -44,16 +51,16 @@ const BookDetailPage = ({ navigation, route }) => {
             });
 
             console.log('scheduled successfully', response.data)
-            toast.show({
-                title: "Swap scheduled successfully!",
-                placement: "bottom"
-            })
+            setShowModal(true)
         } catch (error) {
             console.error('Error fetching data:', error);
             toast.show({
                 title: "Error scheduling swap",
                 placement: "bottom"
             })
+            if (error && error.response && error.response.status == 401) {
+                navigation.navigate('SignIn')
+            }
         }
     }
 
@@ -61,8 +68,20 @@ const BookDetailPage = ({ navigation, route }) => {
         <ScrollView style={styles.container}>
             <Box marginBottom={4}>
                 <VStack justifyContent="space-between">
+                    <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
+                        <Modal.Content maxWidth="400px">
+                            <Modal.CloseButton />
+                            <Modal.Header>Swap Scheduled Successfully</Modal.Header>
+                            <Modal.Body>
+                                <Text>
+                                    Your request to swap this book has been sent to the owner. You will receive an email with further details if your request has been accepted by the owner of the book.
+                                </Text>
+                            </Modal.Body>
+                        </Modal.Content>
+                    </Modal>
+
                     {image ? <Image rounded='lg' style={styles.imageCover} source={{
-                        uri:`data:image/png;base64,${image}`
+                        uri: `data:image/png;base64,${image}`
                     }} alt='image' /> : null}
                     <VStack justifyContent='space-between' pl={2} width='100%' minHeight={100}>
                         <Text marginY={3} color="coolGray.800" bold>

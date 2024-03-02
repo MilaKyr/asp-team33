@@ -128,23 +128,29 @@ const SignUpPage = ({ navigation }) => {
     const { signIn } = React.useContext(AuthContext);
     const [isSubmitting, setSubmitting] = React.useState(false)
 
-
     const onFormSubmit = ({ email, password, name, surname }) => {
         setSubmitting(true)
-        axios.post(`${API_URL}/sign_up`, {
-            email,
-            password,
-            name,
-            surname
-        }).then(res => {
-            if (res.data) {
-                AsyncStorage.setItem('userToken', String(res.data));
-                setSubmitting(false)
-                signIn(String(res.data));
-            }
-        }).catch(err => {
-            console.log('error===>', err)
+        AsyncStorage.getItem('systemAccessToken').then(accessToken => {
+            axios.post(`${API_URL}/sign_up`, {
+                email,
+                password,
+                name,
+                surname
+            }, {
+                headers: {
+                    Authorization: accessToken
+                }
+            }).then(res => {
+                if (res.data) {
+                    AsyncStorage.setItem('userToken', String(res.data));
+                    setSubmitting(false)
+                    signIn(String(res.data));
+                }
+            }).catch(err => {
+                console.log('error===>', err)
+            });
         });
+
     }
 
     return (

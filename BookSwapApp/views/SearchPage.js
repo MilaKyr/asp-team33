@@ -4,6 +4,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import axios from 'axios';
 import React, { useState } from 'react';
 import { API_URL } from '../constants/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 const RenderItem = ({ item, navigation }) => {
@@ -11,7 +12,12 @@ const RenderItem = ({ item, navigation }) => {
 
     const fetchImage = async () => {
         try {
-            const response = await axios.get(API_URL + `/image?book_id=${item.book_id}&user_id=${item.user_id}`);
+            const accessToken = await AsyncStorage.getItem('systemAccessToken');
+            const response = await axios.get(API_URL + `/image?book_id=${item.book_id}&user_id=${item.user_id}`, {
+                headers: {
+                    Authorization: accessToken
+                }
+            });
             setImage(response.data)
         } catch (error) {
 
@@ -64,15 +70,28 @@ const SearchPage = ({ navigation }) => {
         if (countryFilter.length > 0) {
             url = url + `${text ? '' : `''`}` + `&location=${countryFilter}`
         }
-        axios.get(url).then((res) => {
-            setBookResults(res.data)
-        }).catch(() => { })
+
+        AsyncStorage.getItem('systemAccessToken').then(accessToken => {
+            axios.get(url, {
+                headers: {
+                    Authorization: accessToken
+                }
+            }).then((res) => {
+                setBookResults(res.data)
+            }).catch(() => { })
+        });
     }
 
     const getBookLocations = (text) => {
-        axios.get(API_URL + `/locations`).then((res) => {
-            setLocations(res.data)
-        }).catch(() => { })
+        AsyncStorage.getItem('systemAccessToken').then(accessToken => {
+            axios.get(API_URL + `/locations`, {
+                headers: {
+                    Authorization: accessToken
+                }
+            }).then((res) => {
+                setLocations(res.data)
+            }).catch(() => { })
+        });
     }
 
 

@@ -6,6 +6,7 @@ import { AntDesign } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 
 import { API_URL } from '../constants/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const transformAuthors = (authors = '') => {
     if (authors.trim().length == 0) return [];
@@ -34,14 +35,16 @@ function UpdateBookForm({ book: existingBook }) {
 
     React.useEffect(() => {
         if (existingBook) {
+
+            console.log('existingBook===>', existingBook)
             const formObject = {
                 ...formData,
-                authors: existingBook.author,
+                authors: (existingBook.authors || []).join(', '),
                 book_type_id: existingBook.book_type_id,
                 title: existingBook.title,
                 description: existingBook.description,
-                icbn_10: existingBook.icbn_10,
-                year: existingBook.year,
+                isbn_10: existingBook.isbn_10,
+                year: String(existingBook.year),
                 edition: String(existingBook.edition),
                 course_id: formData.course_id
             }
@@ -87,7 +90,7 @@ function UpdateBookForm({ book: existingBook }) {
             book_type_id: formData.book_type_id,
             title: formData.title,
             description: formData.description,
-            icbn_10: formData.icbn_10,
+            isbn_10: formData.isbn_10,
             year: formData.year,
             edition: formData.edition,
             course_id: formData.course_id
@@ -119,7 +122,14 @@ function UpdateBookForm({ book: existingBook }) {
     const getCourses = async () => {
         try {
             const url = `${API_URL}/courses`
-            const response = await axios.get(url);
+
+
+            const accessToken = await AsyncStorage.getItem('systemAccessToken');
+            const response = await axios.get(url, {
+                headers: {
+                    Authorization: accessToken
+                }
+            });
             console.log('get the courses', response.data)
             setCourses(response.data);
         } catch (error) {
@@ -129,7 +139,12 @@ function UpdateBookForm({ book: existingBook }) {
     const getBookTypes = async () => {
         try {
             const url = `${API_URL}/book_types`
-            const response = await axios.get(url);
+            const accessToken = await AsyncStorage.getItem('systemAccessToken');
+            const response = await axios.get(url, {
+                headers: {
+                    Authorization: accessToken
+                }
+            });
             console.log('get the book_types', response.data)
             setBookTypes(response.data);
         } catch (error) {
@@ -228,10 +243,10 @@ function UpdateBookForm({ book: existingBook }) {
             <FormControl>
                 <FormControl.Label _text={{
                     bold: true
-                }}>ICBN</FormControl.Label>
-                <Input size='xl' value={formData.icbn_10} placeholder="Book Year" onChangeText={value => setData({
+                }}>ISBN</FormControl.Label>
+                <Input size='xl' value={formData.isbn_10} placeholder="Book Year" onChangeText={value => setData({
                     ...formData,
-                    icbn_10: value
+                    isbn_10: value
                 })} />
             </FormControl>
             <FormControl>

@@ -4,13 +4,19 @@ import { RefreshControl, StyleSheet, View } from 'react-native';
 import { API_URL } from '../constants/api';
 import axios from 'axios';
 import { AuthContext } from '../util/context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const RenderBookItem = ({ item, navigation, deleteBook }) => {
     const [image, setImage] = React.useState(null);
 
     const fetchImage = async () => {
         try {
-            const response = await axios.get(API_URL + `/image?book_id=${item.book_id}&user_id=${item.user_id}`);
+            const accessToken = await AsyncStorage.getItem('systemAccessToken');
+            const response = await axios.get(API_URL + `/image?book_id=${item.book_id}&user_id=${item.user_id}`, {
+                headers: {
+                    Authorization: accessToken
+                }
+            });
             setImage(response.data)
         } catch (error) {
 
@@ -35,7 +41,7 @@ const RenderBookItem = ({ item, navigation, deleteBook }) => {
                     <Text fontSize="xs" _light={{
                         color: "violet.500"
                     }} fontWeight="500">
-                        by {item.author}.
+                        by {(item.authors || []).join(', ')}.
                     </Text>
                     <Text fontSize="xs" color="coolGray.800" alignSelf="flex-start">
                         Course: {item.course}
@@ -137,8 +143,8 @@ const MyBooksPage = ({ navigation }) => {
                         }) => <RenderBookItem deleteBook={deleteBook} item={item} navigation={navigation} />} keyExtractor={item => item.book_id} />
                 )}
 
-            </Box >
-        </ScrollView >
+            </Box>
+        </ScrollView>
     );
 }
 

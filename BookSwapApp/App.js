@@ -6,7 +6,7 @@ import HomePage from './views/HomePage';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Button, NativeBaseProvider } from "native-base";
+import { Button, HStack, NativeBaseProvider, Spinner } from "native-base";
 import { LinearGradient } from 'expo-linear-gradient';
 import SearchPage from './views/SearchPage';
 import MyBooksPage from './views/MyBooksPage';
@@ -20,6 +20,8 @@ import SwapSchedulePage from './views/SwapSchedulePage';
 import React from 'react';
 import { AuthContext } from './util/context';
 import UpdateBookPage from './views/UpdateBookPage';
+import axios from 'axios';
+import { API_URL } from './constants/api';
 
 const config = {
   dependencies: {
@@ -72,6 +74,20 @@ function MyBooksStack() {
   );
 }
 
+function SignInStack() {
+
+  return (
+    <Stack.Navigator>
+      <Stack.Screen options={{
+        headerShown: false
+      }} name="SignIn" component={SignInPage} />
+      <Stack.Screen options={{
+        headerShown: false
+      }} name="SignUp" component={SignUpPage} />
+    </Stack.Navigator>
+  );
+}
+
 function SearchStack() {
   const { isSignedIn } = React.useContext(AuthContext);
 
@@ -101,8 +117,23 @@ function SearchStack() {
   );
 }
 
-export default function App() {
 
+function HomeStack() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen options={{
+        headerShown: false
+      }} name="HomePage" component={HomePage} />
+      <Stack.Screen options={{
+        headerTitle: 'Book Detail'
+      }} name="BookDetail" component={BookDetailPage} />
+    </Stack.Navigator>
+  );
+}
+
+
+export default function App() {
+  const [initialLoading, setInitialLoading] = React.useState(true);
   const [state, dispatch] = React.useReducer(
     (prevState, action) => {
       switch (action.type) {
@@ -164,52 +195,99 @@ export default function App() {
     isSignedIn: state.userToken != null
   }
 
-  console.log(state)
+
+  const getAndSaveDeviceAccessToken = async () => {
+    try {
+      try {
+        const accessToken = await AsyncStorage.getItem('systemAccessToken');
+        await axios.get(API_URL, {
+          headers: {
+            Authorization: accessToken
+          }
+        });
+        setInitialLoading(false);
+      } catch (error) {
+        if (error && error.response && (error.response.status == 401 || error.response.status == 403)) {
+          console.log('failed initial request, creating system token')
+          const response = await axios.post(`${API_URL}/token/generate`, {
+            user: process.env.EXPO_PUBLIC_JWT_USER,
+            password: process.env.EXPO_PUBLIC_JWT_USER_PASSWORD,
+          })
+          await AsyncStorage.setItem('systemAccessToken', response.data.accessToken);
+          setInitialLoading(false);
+        }
+      }
+    } catch (error) {
+      console.log('generate token error ', error.response.data)
+    }
+  }
+
+  React.useEffect(() => {
+    getAndSaveDeviceAccessToken()
+  }, [])
+
 
   return (
     <NativeBaseProvider config={config}>
       <AuthContext.Provider value={authContext}>
-        <NavigationContainer>
-          <Tab.Navigator screenOptions={({ route }) => ({
-            tabBarIcon: ({ focused, color, size }) => {
-              let iconName;
+        {initialLoading ? (
+          <HStack height='100%' width='100%' justifyContent='center'>
+            <Spinner size='lg' />
+          </HStack>
+        ) : (
+          <NavigationContainer>
+            <Tab.Navigator screenOptions={({ route }) => ({
+              tabBarIcon: ({ focused, color, size }) => {
+                let iconName;
 
-              if (route.name === 'Home') {
-                iconName = focused
-                  ? 'home'
-                  : 'home-outline';
-              } else if (route.name === 'Search') {
-                iconName = focused ? 'search' : 'search-outline';
-              } else if (route.name === 'MyBooks') {
-                iconName = focused ? 'book' : 'book-outline';
-              }
-
-              // You can return any component that you like here!
-              return <Ionicons name={iconName} size={size} color={color} />;
-            },
-            tabBarInactiveTintColor: 'gray',
-          })}>
-            <Tab.Screen options={{
-              title: 'Book Swap'
-            }} name="Home" component={HomePage} />
-            <Tab.Screen name="Search" component={SearchStack} />
-            <Tab.Screen options={{
-              title: 'My Books',
-              headerTitle: 'My Books',
-              headerRight: () => {
-                if (state.userToken != null) {
-                  return (
-                    <Button variant='ghost' onPress={() => {
-                      handleSignOut()
-                    }}>Sign Out</Button>
-                  )
+                if (route.name === 'Home') {
+                  iconName = focused
+                    ? 'home'
+                    : 'home-outline';
+                } else if (route.name === 'Search') {
+                  iconName = focused ? 'search' : 'search-outline';
+                } else if (route.name === 'MyBooks') {
+                  iconName = focused ? 'book' : 'book-outline';
+                } else if (route.name === 'SignIn') {
+                  iconName = focused ? 'person' : 'person-outline';
                 }
-                return null;
+
+                // You can return any component that you like here!
+                return <Ionicons name={iconName} size={size} color={color} />;
               },
-            }} name="MyBooks" component={MyBooksStack} />
-          </Tab.Navigator>
-        </NavigationContainer>
-      </AuthContext.Provider>
-    </NativeBaseProvider>
+              tabBarInactiveTintColor: 'gray',
+            })}>
+              <Tab.Screen options={{
+                title: 'Book Swap'
+              }} name="Home" component={HomeStack} />
+              <Tab.Screen name="Search" component={SearchStack} />
+
+              {state.userToken != null ? (
+                <Tab.Screen options={{
+                  title: 'My Books',
+                  headerTitle: 'My Books',
+                  headerRight: () => {
+                    if (state.userToken != null) {
+                      return (
+                        <Button variant='ghost' onPress={() => {
+                          handleSignOut()
+                        }}>Sign Out</Button>
+                      )
+                    }
+                    return null;
+                  },
+                }} name="MyBooks" component={MyBooksStack} />
+              ) : (
+                <Tab.Screen options={{
+                  title: 'Sign In',
+                  headerTitle: 'Sign In',
+                }} name="SignIn" component={SignInStack} />
+              )}
+            </Tab.Navigator>
+          </NavigationContainer>
+        )
+        }
+      </AuthContext.Provider >
+    </NativeBaseProvider >
   );
 }

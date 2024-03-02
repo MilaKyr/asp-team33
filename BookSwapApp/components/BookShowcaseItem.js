@@ -3,6 +3,7 @@ import { Box, HStack, Heading, Stack, Text } from 'native-base';
 import { StyleSheet, Image, Pressable } from 'react-native';
 import { API_URL } from '../constants/api';
 import React from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 const BookShowcaseItem = ({ item, navigation, index }) => {
@@ -10,10 +11,15 @@ const BookShowcaseItem = ({ item, navigation, index }) => {
 
     const fetchImage = async () => {
         try {
-            const response = await axios.get(API_URL + `/image?book_id=${item.book_id}&user_id=${item.user_id}`);
+            const accessToken = await AsyncStorage.getItem('systemAccessToken');
+            const response = await axios.get(API_URL + `/image?book_id=${item.book_id}&user_id=${item.user_id}`, {
+                headers: {
+                    Authorization: accessToken
+                }
+            });
             setImage(response.data)
         } catch (error) {
-
+            console.log('response for image error', error)
         }
     }
 

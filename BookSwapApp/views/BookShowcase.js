@@ -3,6 +3,7 @@ import axios from 'axios';
 import BookShowcaseItem from '../components/BookShowcaseItem';
 import { useEffect, useState } from 'react';
 import { API_URL } from '../constants/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 
@@ -15,7 +16,12 @@ const BookShowcase = ({ navigation }) => {
     
       const fetchData = async () => {
         try {
-          const response = await axios.get(API_URL);
+          const accessToken = await AsyncStorage.getItem('systemAccessToken');
+          const response = await axios.get(API_URL, {
+            headers: {
+                Authorization: accessToken
+            }
+        });
           setData(response.data);
         } catch (error) {
           console.error('Error fetching data:', error);

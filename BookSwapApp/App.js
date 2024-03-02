@@ -74,6 +74,20 @@ function MyBooksStack() {
   );
 }
 
+function SignInStack() {
+
+  return (
+    <Stack.Navigator>
+      <Stack.Screen options={{
+        headerShown: false
+      }} name="SignIn" component={SignInPage} />
+      <Stack.Screen options={{
+        headerShown: false
+      }} name="SignUp" component={SignUpPage} />
+    </Stack.Navigator>
+  );
+}
+
 function SearchStack() {
   const { isSignedIn } = React.useContext(AuthContext);
 
@@ -236,6 +250,8 @@ export default function App() {
                   iconName = focused ? 'search' : 'search-outline';
                 } else if (route.name === 'MyBooks') {
                   iconName = focused ? 'book' : 'book-outline';
+                } else if (route.name === 'SignIn') {
+                  iconName = focused ? 'person' : 'person-outline';
                 }
 
                 // You can return any component that you like here!
@@ -261,6 +277,12 @@ export default function App() {
                   return null;
                 },
               }} name="MyBooks" component={MyBooksStack} />
+              {state.userToken != null ? null : (
+                <Tab.Screen options={{
+                  title: 'Sign In',
+                  headerTitle: 'Sign In',
+                }} name="SignIn" component={SignInStack} />
+              )}
             </Tab.Navigator>
           </NavigationContainer>
         )

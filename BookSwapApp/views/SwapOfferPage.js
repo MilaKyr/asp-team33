@@ -108,10 +108,10 @@ const SwapOfferPage = ({ route }) => {
 
 
                                 <Heading marginY={2} size='sm' color="coolGray.800" bold>
-                                    {`${item.receiver_name} ${item.receiver_surname}`}
+                                    {`${item.sender_name} ${item.sender_surname}`}
                                 </Heading>
                                 <Heading marginY={2} size='xs' color="blue.800" bold>
-                                    {`${item.receiver_city}, ${item.receiver_country}`}
+                                    {`${item.sender_city}, ${item.sender_country}`}
                                 </Heading>
 
 

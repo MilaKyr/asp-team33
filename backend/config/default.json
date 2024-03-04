@@ -11,7 +11,7 @@
     "audience": "http://localhost"
   },
   "database": {
-    "user": "admin",
+    "user": "main",
     "host": "localhost",
     "database": "api",
     "password": "password",

@@ -2,14 +2,15 @@
 
 ## Final application walkthrough
 
-https://youtu.be/mgGzQRS8a18
+[![Book Swap walkthrough](https://img.youtube.com/vi/mgGzQRS8a18/hqdefault.jpg)](https://youtu.be/mgGzQRS8a18)
+
 
 Press play to see the video.
 
 
 ## Commit progression
 
-https://youtu.be/Hg_TXn_e5hs
+[![Commit history](https://img.youtube.com/vi/Hg_TXn_e5hs/hqdefault.jpg)](https://youtu.be/Hg_TXn_e5hs)
 
 Press play to see the video.
 

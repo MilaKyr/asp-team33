@@ -205,19 +205,19 @@ const myBook = async (request, response) => {
     }
 };
 
-const insertBookModel = async (data) => {
+const insertBookModel = async (client, data) => {
     var statement = "WITH temp_table AS ( \
         INSERT INTO book (type_id, title, description, isbn_10, year, edition) VALUES ($1, $2, $3, $4, $5, $6) \
         ON CONFLICT DO NOTHING RETURNING id) \
         SELECT id FROM temp_table UNION ALL \
         SELECT id FROM book WHERE type_id = $1 AND title = $2 AND description = $3 \
             AND isbn_10 = $4 AND year = $5 AND edition = $6";
-    const book = await getPool().query(statement, 
+    const book = await client.query(statement, 
                 [data.book_type_id, data.title, data.description, data.isbn_10, data.year, data.edition]);
     return book.rows[0].id;
 }
 
-const insertAuthorModel = async (data, book_id) => {
+const insertAuthorModel = async (client, data, book_id) => {
     var values = [];
     var author_names = [];
     data.authors.map((author) => {
@@ -226,7 +226,7 @@ const insertAuthorModel = async (data, book_id) => {
     });
 
     var insert_query = utils.insertData("author", ["name", "surname"], values, " ON CONFLICT DO NOTHING RETURNING id");
-    const db_authors = await getPool().query("WITH temp_table AS ( " + insert_query + ") SELECT id FROM temp_table UNION ALL \
+    const db_authors = await client.query("WITH temp_table AS ( " + insert_query + ") SELECT id FROM temp_table UNION ALL \
         SELECT id FROM (SELECT id, name||','||surname as full_name FROM author) \
         WHERE \"full_name\" =ANY($1::text[])", [author_names]);
 
@@ -235,26 +235,29 @@ const insertAuthorModel = async (data, book_id) => {
         values.push({ book_id: book_id, author_id: author_row.id });
     });
     var insert_query = utils.insertData("bookauthor", ["book_id", "author_id"], values, " ON CONFLICT DO NOTHING");
-    await getPool().query(insert_query);
+    await client.query(insert_query);
 }
 
 const addBook = async (request, response) => {
     if (!request.session.loggedin) return response.status(401).send();
     try {
         const validation = validationResult(request);
-        console.log('validation', validation.array())
         if (!validation.isEmpty()) {
             return response.status(404).send();
         }
         const data = matchedData(request);
-        var book_id = await insertBookModel(data);
-        await getPool().query("INSERT INTO userbook (book_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
+        const client = getPool();
+        await client.query('BEGIN');
+        var book_id = await insertBookModel(client, data);
+        await client.query("INSERT INTO userbook (book_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
             [book_id, request.session.username]);
-        await getPool().query("INSERT INTO bookcourse (book_id, course_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
+        await client.query("INSERT INTO bookcourse (book_id, course_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
             [book_id, data.course_id]);
-        await insertAuthorModel(data, book_id);
+        await insertAuthorModel(client, data, book_id);
+        await client.query('COMMIT');
         response.status(200).json(book_id);
     } catch (err) {
+        await client.query('ROLLBACK');
         return response.status(500).send(err);
     }
 }
@@ -267,23 +270,27 @@ const updateBook = async (request, response) => {
             return response.status(404).send();
         }
         const data = matchedData(request);
-        await getPool().query("UPDATE book SET title = $1, description = $2, isbn_10 = $3, \
+        const client = getPool();
+        await client.query('BEGIN');
+        await client.query("UPDATE book SET title = $1, description = $2, isbn_10 = $3, \
         year = $4, edition = $5, type_id = $6 WHERE id = $7", 
         [data.title, data.description, data.isbn_10, data.year, data.edition, data.book_type_id, data.id]);
-        await getPool().query("UPDATE bookcourse SET course_id = $1 WHERE book_id = $2", [data.course_id, data.id]);
+        await client.query("UPDATE bookcourse SET course_id = $1 WHERE book_id = $2", [data.course_id, data.id]);
         var values = []
         for (author of data.authors) {
             values.push({ name: author.name, surname: author.surname });
         }
         var query = utils.insertData("author", ["name", "surname"], values,
             " ON CONFLICT (name, surname) DO UPDATE SET name = EXCLUDED.name, surname = EXCLUDED.surname RETURNING id");
-        const res = await getPool().query(query);
-        await getPool().query("DELETE FROM bookauthor where book_id = $1", [data.id]);
+        const res = await client.query(query);
+        await client.query("DELETE FROM bookauthor where book_id = $1", [data.id]);
         const author_ids = values.map((_, index) => ({ book_id: parseInt(data.id), author_id: res.rows[index].id }));
         var query = utils.insertData("bookauthor", ["book_id", "author_id"], author_ids);
-        await getPool().query(query);
+        await client.query(query);
+        await client.query('COMMIT');
         response.status(200).send();
     } catch (err) {
+        await client.query('ROLLBACK');
         return response.status(404).send(err);
     }
 };

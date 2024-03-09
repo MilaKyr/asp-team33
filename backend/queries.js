@@ -46,6 +46,7 @@ const generateToken = (request, response) => {
 
 
 const bookShowcase = async (request, response) => {
+    console.log('books')
     const token = request.header(config.jwt.tokenHeaderKey);
     if (!token) {
         return response.status(401).send();
@@ -154,6 +155,7 @@ const signUp = async (request, response) => {
     try {
         const result = validationResult(request);
         if (!result.isEmpty()) {
+            console.log('is this where it happene', result.array())
             return response.status(404).send();
         }
         const data = matchedData(request);

@@ -43,7 +43,32 @@ function SignUpForm({ onFormSubmit, isSubmitting }) {
                 surname: 'Last name is too short'
             });
             return false;
-        } else if (formData.email === undefined) {
+        } else if (formData.country == null || formData.country == '') {
+            setErrors({
+                ...errors,
+                country: 'Country is required.'
+            });
+            return false;
+        } else if (formData.country.length < 2) {
+            setErrors({
+                ...errors,
+                country: 'Country name is too short'
+            });
+            return false;
+        } else if (formData.city == null || formData.city == '') {
+            setErrors({
+                ...errors,
+                city: 'City is required.'
+            });
+            return false;
+        } else if (formData.city.length < 2) {
+            setErrors({
+                ...errors,
+                city: 'City name is too short'
+            });
+            return false;
+        }
+        else if (formData.email === undefined) {
             setErrors({
                 ...errors,
                 email: 'Email is required'
@@ -118,6 +143,31 @@ function SignUpForm({ onFormSubmit, isSubmitting }) {
             })} />
             {'password' in errors ? <FormControl.ErrorMessage>Please enter a valid password</FormControl.ErrorMessage> : null}
         </FormControl>
+
+        <FormControl isRequired isInvalid={'city' in errors}>
+            <FormControl.Label _text={{
+                bold: true
+            }}>City</FormControl.Label>
+            <Input autoCapitalize='none' size='xl' placeholder="Enter your current city" onChangeText={value => setData({
+                ...formData,
+                city: value
+            })} />
+            {'city' in errors ? <FormControl.ErrorMessage>Please enter a valid city</FormControl.ErrorMessage> : null}
+        </FormControl>
+
+        <FormControl isRequired isInvalid={'country' in errors}>
+            <FormControl.Label _text={{
+                bold: true
+            }}>Country</FormControl.Label>
+            <Input autoCapitalize='none' size='xl' placeholder="Enter your current country" onChangeText={value => setData({
+                ...formData,
+                country: value
+            })} />
+            {'country' in errors ? <FormControl.ErrorMessage>Please enter a valid city</FormControl.ErrorMessage> : null}
+        </FormControl>
+
+
+
         <Button size='lg' onPress={onSubmit} mt="5" colorScheme="cyan">
             Register
         </Button>
@@ -128,14 +178,16 @@ const SignUpPage = ({ navigation }) => {
     const { signIn } = React.useContext(AuthContext);
     const [isSubmitting, setSubmitting] = React.useState(false)
 
-    const onFormSubmit = ({ email, password, name, surname }) => {
+    const onFormSubmit = ({ email, password, name, surname, city, country }) => {
         setSubmitting(true)
         AsyncStorage.getItem('systemAccessToken').then(accessToken => {
             axios.post(`${API_URL}/sign_up`, {
                 email,
                 password,
                 name,
-                surname
+                surname,
+                city,
+                country
             }, {
                 headers: {
                     Authorization: accessToken

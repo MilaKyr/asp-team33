@@ -39,6 +39,10 @@ const BookDetailPage = ({ navigation, route }) => {
 
 
     const scheduleSwap = async () => {
+        if (!isSignedIn) {
+            navigation.navigate('SignIn')
+            return;
+        }
         try {
             console.log({
                 book_id: item.book_id,

@@ -1,8 +1,21 @@
-# asp-team33
-Agile software project UoL course
+# Welcome to the Book Swap Application repository
 
-### Sample data
-The file is under `data/users.json`
+## Final application walkthrough
+
+https://youtu.be/mgGzQRS8a18
+
+Press play to see the video.
+
+
+## Commit progression
+
+https://youtu.be/Hg_TXn_e5hs
+
+Press play to see the video.
+
+## Depoyment
+Deployment specifications can be found in the final report
+
 
 ### Dev environment
 To run the backend api:
@@ -25,8 +38,9 @@ To enter PostgresQL within the docker, run:
 docker exec -it local-postgres psql -U main -d api
 ```
 
-### Prod
-Deployed backend: https://asp-team33.onrender.com
+### Sample data
+The file is under `data/users.json`
+
 
 ### Tests
 To run tests:
